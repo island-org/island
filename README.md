@@ -1,4 +1,4 @@
-openToolkits
+island
 ============
 
-lightweight and low-level creative coding toolkits.
+island is a light-weight and low-level creative coding framework.
