@@ -10,3 +10,6 @@
 [submodule "3rdparty/gl3w"]
 	path = 3rdparty/gl3w
 	url = https://github.com/skaslev/gl3w.git
+[submodule "3rdparty/nanovg"]
+	path = 3rdparty/nanovg
+	url = https://github.com/memononen/nanovg.git
