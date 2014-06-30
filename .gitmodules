@@ -13,3 +13,6 @@
 [submodule "3rdparty/nanovg"]
 	path = 3rdparty/nanovg
 	url = https://github.com/memononen/nanovg.git
+[submodule "3rdparty/lua"]
+	path = 3rdparty/lua
+	url = https://github.com/LuaDist/lua.git
