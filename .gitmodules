@@ -16,3 +16,9 @@
 [submodule "3rdparty/lua"]
 	path = 3rdparty/lua
 	url = https://github.com/LuaDist/lua.git
+[submodule "3rdparty/libtess2"]
+	path = 3rdparty/libtess2
+	url = https://github.com/memononen/libtess2.git
+[submodule "3rdparty/json-c"]
+	path = 3rdparty/json-c
+	url = https://github.com/json-c/json-c.git
