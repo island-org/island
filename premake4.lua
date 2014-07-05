@@ -2,29 +2,28 @@
 local action = _ACTION or ""
 
 solution "island"
-	location (".project")
-	configurations { "Debug", "Release" }
-	platforms {"native", "x64", "x32"}
-    targetdir ("bin")
+    location (".project")
+    configurations { "Debug", "Release" }
+    platforms {"native", "x64", "x32"}
     language "C"
 
     configuration "vs*"
-        defines     { "_CRT_SECURE_NO_WARNINGS" }
+        defines { "_CRT_SECURE_NO_WARNINGS" }
 
     configuration "Debug"
-        targetsuffix "_d"
+        targetdir ("bin/Debug")
         defines { "DEBUG" }
         flags { "Symbols"}
 
     configuration "Release"
+        targetdir ("bin/Release")
         defines { "NDEBUG" }
         flags { "Optimize"}
 
     project "glfw"
         kind "StaticLib"
         includedirs { "3rdparty/glfw/include" }
-        files
-        { 
+        files { 
             "3rdparty/glfw/src/clipboard.c",
             "3rdparty/glfw/src/context.c",
             "3rdparty/glfw/src/gamma.c",
@@ -38,13 +37,11 @@ solution "island"
             "3rdparty/glfw/src/input.c",
         }
 
-        targetdir("build")
         defines { "_GLFW_USE_OPENGL" }
 
         configuration "windows"
             defines { "_GLFW_WIN32", "_GLFW_WGL" }
-            files 
-            {
+            files {
                 "3rdparty/glfw/src/win32*.c",
                 "3rdparty/glfw/src/wgl_context.c",
                 "3rdparty/glfw/src/winmm_joystick.c",
@@ -64,18 +61,54 @@ solution "island"
     project "libuv"
         kind "StaticLib"
         includedirs { "3rdparty/libuv/include" }
-        files { "3rdparty/libuv/src/*.c", "3rdparty/libuv/src/win/*.c" }
+        files { 
+            "3rdparty/libuv/src/*.c", 
+            "3rdparty/libuv/src/win/*.c" 
+        }
 
     project "lua"
         os.copyfile("3rdparty/lua/src/luaconf.h.orig", "3rdparty/lua/src/luaconf.h")
         kind "StaticLib"
         includedirs { "3rdparty/lua/src" }
         files { "3rdparty/lua/src/*.c"}
-        excludes
-        {
+        excludes {
             "3rdparty/lua/src/loadlib_rel.c",
             "3rdparty/lua/src/lua.c",
             "3rdparty/lua/src/luac.c",
             "3rdparty/lua/src/print.c",
         }
+
+    function create_example_project( example_path )
+        example_path = string.sub(example_path, string.len("examples/") + 1);
+        project (example_path)
+            kind "ConsoleApp"
+            files { "examples/" .. example_path .. "/*.c" }
+            defines { "GLEW_STATIC" }
+            includedirs { 
+                "3rdparty",
+                "3rdparty/glfw/include",
+                "3rdparty/glew",
+                "3rdparty/nanovg/src",
+                "3rdparty/libuv/src",
+                "3rdparty/lua/src",
+                "3rdparty/stb"
+            }
+            links {
+                "glew",
+                "glfw",
+                "libuv",
+                "nanovg",
+                "lua",
+            }
+
+            configuration "windows"
+                links {
+                    "OpenGL32"
+                }
+    end
+
+    local examples = os.matchdirs("examples/*")
+    for _, example in ipairs(examples) do
+        create_example_project(example)
+    end
 
