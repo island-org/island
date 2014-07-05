@@ -2,16 +2,17 @@
 local action = _ACTION or ""
 
 solution "island"
-	location ( "build" )
+	location (".project")
 	configurations { "Debug", "Release" }
 	platforms {"native", "x64", "x32"}
-    targetdir("build")
+    targetdir ("bin")
     language "C"
 
     configuration "vs*"
         defines     { "_CRT_SECURE_NO_WARNINGS" }
 
     configuration "Debug"
+        targetsuffix "_d"
         defines { "DEBUG" }
         flags { "Symbols"}
 
