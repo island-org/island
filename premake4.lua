@@ -78,6 +78,11 @@ solution "island"
             "3rdparty/lua/src/print.c",
         }
 
+    project "stb"
+        kind "StaticLib"
+        includedirs { "3rdparty/stb" }
+        files { "3rdparty/stb/*.c" }
+
     function create_example_project( example_path )
         example_path = string.sub(example_path, string.len("examples/") + 1);
         project (example_path)
@@ -97,11 +102,12 @@ solution "island"
                 "3rdparty/stb"
             }
             links {
-                "glew",
                 "glfw",
-                "libuv",
+                "glew",
                 "nanovg",
+                "libuv",
                 "lua",
+                "stb",
             }
 
             configuration "windows"

@@ -1,5 +1,5 @@
-[submodule "3rdparty/stb"]
-	path = 3rdparty/stb
+[submodule "3rdparty/stb/stb"]
+	path = 3rdparty/stb/stb
 	url = https://github.com/nothings/stb.git
 [submodule "3rdparty/imgui"]
 	path = 3rdparty/imgui
