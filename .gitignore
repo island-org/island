@@ -19,4 +19,7 @@
 *.exe
 *.out
 *.app
+
+# Auto-generated files
 /build
+3rdparty/lua/src/luaconf.h
