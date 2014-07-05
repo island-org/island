@@ -83,7 +83,10 @@ solution "island"
         project (example_path)
             kind "ConsoleApp"
             files { "examples/" .. example_path .. "/*.c" }
-            defines { "GLEW_STATIC" }
+            defines { 
+                "GLEW_STATIC",
+                "NANOVG_GL3_IMPLEMENTATION"
+            }
             includedirs { 
                 "3rdparty",
                 "3rdparty/glfw/include",
