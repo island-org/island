@@ -24,6 +24,7 @@ solution "island"
         kind "StaticLib"
         includedirs { "3rdparty/glfw/include" }
         files { 
+            "3rdparty/glfw/include/GLFW/*.h",
             "3rdparty/glfw/src/clipboard.c",
             "3rdparty/glfw/src/context.c",
             "3rdparty/glfw/src/gamma.c",
@@ -50,27 +51,43 @@ solution "island"
     project "glew"
         kind "StaticLib"
         includedirs { "3rdparty/glew" }
-        files { "3rdparty/glew/*.c" }
+        files { 
+            "3rdparty/glew/GL/*.h",
+            "3rdparty/glew/*.c" 
+        }
         defines "GLEW_STATIC"
 
     project "nanovg"
         kind "StaticLib"
         includedirs { "3rdparty/nanovg/src" }
-        files { "3rdparty/nanovg/src/*.c" }
+        files { "3rdparty/nanovg/src/*" }
 
     project "libuv"
         kind "StaticLib"
         includedirs { "3rdparty/libuv/include" }
         files { 
-            "3rdparty/libuv/src/*.c", 
-            "3rdparty/libuv/src/win/*.c" 
+            "3rdparty/libuv/include/*.h", 
+            "3rdparty/libuv/src/*.c"
         }
+
+        configuration "linux"
+            files {
+                "3rdparty/libuv/src/unix/*.c" 
+            }
+
+        configuration "windows"
+            files {
+                "3rdparty/libuv/src/win/*.c" 
+            }
 
     project "lua"
         os.copyfile("3rdparty/lua/src/luaconf.h.orig", "3rdparty/lua/src/luaconf.h")
         kind "StaticLib"
         includedirs { "3rdparty/lua/src" }
-        files { "3rdparty/lua/src/*.c"}
+        files { 
+            "3rdparty/lua/src/*.h",
+            "3rdparty/lua/src/*.c"
+        }
         excludes {
             "3rdparty/lua/src/loadlib_rel.c",
             "3rdparty/lua/src/lua.c",
@@ -81,13 +98,16 @@ solution "island"
     project "stb"
         kind "StaticLib"
         includedirs { "3rdparty/stb" }
-        files { "3rdparty/stb/*.c" }
+        files { 
+            "3rdparty/stb/stb/*.h",
+            "3rdparty/stb/*.c" 
+        }
 
     function create_example_project( example_path )
         example_path = string.sub(example_path, string.len("examples/") + 1);
         project (example_path)
             kind "ConsoleApp"
-            files { "examples/" .. example_path .. "/*.c" }
+            files { "examples/" .. example_path .. "/*" }
             defines { 
                 "GLEW_STATIC",
                 "NANOVG_GL3_IMPLEMENTATION"
