@@ -14,27 +14,30 @@ void setup();
 void draw();
 void shutdown();
 
-// Processing API - Structure
+// Structure
 void pushStyle();
 void popStyle();
-void pushMatrix();
-void popMatrix();
 
-// Processing API - Color
+// Math - Trigonometry
+float degrees(float rad);
+float radians(float deg);
+
+// Color
 struct NVGcolor color(unsigned char r, unsigned char g, unsigned char b);
+struct NVGcolor gray(unsigned char v);
 struct NVGcolor lerpColor(struct NVGcolor c0, struct NVGcolor c1, float u);
 float red(struct NVGcolor color);
 float green(struct NVGcolor color);
 float blue(struct NVGcolor color);
 float alpha(struct NVGcolor color);
 
-// Processing API - Environment
+// Environment
 void size(int winWidth, int winHeight);
 void cursor();
 void noCursor();
 extern int width, height;
 
-// Processing API - Shape - 2D Primitives
+// Shape - 2D Primitives
 void arc(float cx, float cy, float r, float a0, float a1, int dir);
 void ellipse(float cx, float cy, float rx, float ry);
 void line();
@@ -44,12 +47,12 @@ void rect(float x, float y, float w, float h);
 void roundedRect(float x, float y, float w, float h, float r);
 void triangle();
 
-// Processing API - Shape - Attributes
+// Shape - Attributes
 void strokeCap(int cap); // NVG_BUTT (default), NVG_ROUND, NVG_SQUARE
 void strokeJoin(int join); // NVG_MITER (default), NVG_ROUND, NVG_BEVEL
 void strokeWeight(float weight);
 
-// Processing API - Mouse
+// Mouse
 extern float mouseX, mouseY;
 extern float pmouseX, pmouseY;
 extern int mousePressed;
@@ -61,13 +64,24 @@ enum
 };
 extern int mouseButton;
 
-// Processing API - Keyboard
+// Keyboard
 extern int keyPressed;
 extern int key;
 
-// Processing API - Transform 
+// Transform 
+void pushMatrix();
+void popMatrix();
+void printMatrix();
+void resetMatrix();
+void applyMatrix(float a, float b, float c, float d, float e, float f);
 
-// Processing API - Color
+void translate(float x, float y);
+void rotate(float angle);
+void scale(float x, float y);
+void shearX(float angle);
+void shearY(float angle);
+
+// Color
 void background(struct NVGcolor color);
 void fill(struct NVGcolor color);
 void noFill();
@@ -152,6 +166,16 @@ void roundedRect(float x, float y, float w, float h, float r)
     endShape();
 }
 
+float degrees(float rad)
+{
+    return nvgRadToDeg(rad);
+}
+
+float radians(float deg)
+{
+    return nvgRadToDeg(deg);
+}
+
 static struct NVGcolor backgroundColor = {0.5f, 0.5f, 0.5f, 1.0f};
 void background(struct NVGcolor color)
 {
@@ -215,9 +239,49 @@ void popMatrix()
     nvgRestore(vg);
 }
 
+void resetMatrix()
+{
+    nvgResetTransform(vg);
+}
+
+void applyMatrix(float a, float b, float c, float d, float e, float f)
+{
+    nvgTransform(vg, a, b, c, d, e, f);
+}
+
+void translate(float x, float y)
+{
+    nvgTranslate(vg, x, y);
+}
+
+void rotate(float angle)
+{
+    nvgRotate(vg, angle);
+}
+
+void scale(float x, float y)
+{
+    nvgScale(vg, x, y);
+}
+
+void shearX(float angle)
+{
+    nvgSkewX(vg, angle);
+}
+
+void shearY(float angle)
+{
+    nvgSkewY(vg, angle);
+}
+
 struct NVGcolor color(unsigned char r, unsigned char g, unsigned char b)
 {
     return nvgRGB(r, g, b);
+}
+
+struct NVGcolor gray(unsigned char v)
+{
+    return nvgRGB(v, v, v);
 }
 
 struct NVGcolor lerpColor(struct NVGcolor c0, struct NVGcolor c1, float u)
