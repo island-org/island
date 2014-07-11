@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <nanovg_gl.h>
 #include <stdio.h>
+#include <stb/stb_image_write.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4244)  // conversion from 'float' to 'int', possible loss of data
@@ -49,6 +50,10 @@ PImage createImage(int w, int h);
 void updateImage(PImage img, const unsigned char* data);
 void deleteImage(PImage img);
 void image(PImage img, int x, int y, int w, int h);
+
+// Output - Image
+// Supports png, tga, bmp
+void saveFrame(const char* filename);
 
 // Environment
 void size(int winWidth, int winHeight);
@@ -548,6 +553,56 @@ int main()
 
     nvgDeleteGL3(vg);
     glfwTerminate();
+}
+
+static void _flipHorizontal(unsigned char* image, int w, int h, int stride, int comp)
+{
+    int i = 0, j = h-1, k;
+    while (i < j) {
+        unsigned char* ri = &image[i * stride];		
+        unsigned char* rj = &image[j * stride];		
+        for (k = 0; k < w*comp; k++) {
+            unsigned char t = ri[k];
+            ri[k] = rj[k];
+            rj[k] = t;
+        }
+        i++;
+        j--;
+    }
+}
+
+void saveFrame(const char* name)
+{
+    const int comp = 3;
+    int w = fbWidth;
+    int h = fbHeight;
+    unsigned char* image = (unsigned char*)malloc(w*h*comp);
+    if (image == NULL)
+        return;
+
+    // Translate nvg commands to opengl functions and do the real rendering
+    nvgEndFrame(vg);
+
+    glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, image);
+    _flipHorizontal(image, w, h, w*comp, comp);
+
+    if (strstr(name, ".png"))
+    {
+        stbi_write_png(name, w, h, comp, image, w*comp);
+    }
+    else if (strstr(name, ".tga"))
+    {
+        stbi_write_tga(name, w, h, comp, image);
+    }
+    else if (strstr(name, ".bmp"))
+    {
+        stbi_write_bmp(name, w, h, comp, image);
+    }
+    else
+    {
+        printf("Unsupported image format %s.\n", name);
+    }
+    free(image);
 }
 
 #endif // SKETCH_2D_IMPLEMENTATION

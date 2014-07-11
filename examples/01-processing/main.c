@@ -5,21 +5,13 @@ PImage img;
 
 void setup()
 {
-    size(600, 600);
+    size(1024, 768);
     noCursor();
     img = loadImage("../3rdparty/nanovg/example/screenshot-01.png");
 }
 
 void draw()
 {
-    if (keyPressed)
-    {
-        if (key == GLFW_KEY_ESCAPE)
-        {
-            quit();
-        }
-    }
-
     if (mousePressed)
     {
         image(img, mouseX, mouseY, img.width, img.height);
@@ -27,6 +19,18 @@ void draw()
     else
     {
         image(img, mouseX, mouseY, img.width / 2, img.height / 2);
+    }
+
+    if (keyPressed)
+    {
+        if (key == GLFW_KEY_ESCAPE)
+        {
+            quit();
+        }
+        else if (key == GLFW_KEY_SPACE)
+        {
+            saveFrame("screenshot.png");
+        }
     }
 }
 
