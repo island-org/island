@@ -6,7 +6,7 @@ PFont font;
 
 void setup()
 {
-    size(1024, 768);
+    size(800, 600);
     noCursor();
     img1 = loadImage("../3rdparty/nanovg/example/images/image9.jpg");
     img2 = loadImage("../3rdparty/nanovg/example/images/image10.jpg");
@@ -15,6 +15,8 @@ void setup()
 
 void draw()
 {
+    background(gray(122));
+
     if (mousePressed)
     {
         image(img1, mouseX, mouseY, img1.width, img1.height);

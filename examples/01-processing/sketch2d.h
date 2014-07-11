@@ -35,7 +35,9 @@ float radians(float deg);
 
 // Color
 struct NVGcolor color(unsigned char r, unsigned char g, unsigned char b);
+struct NVGcolor colorA(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 struct NVGcolor gray(unsigned char v);
+struct NVGcolor grayAlpha(unsigned char v, unsigned char a);
 struct NVGcolor lerpColor(struct NVGcolor c0, struct NVGcolor c1, float u);
 float red(struct NVGcolor color);
 float green(struct NVGcolor color);
@@ -89,6 +91,20 @@ void cursor();
 void noCursor();
 void quit();
 extern int width, height;
+
+//
+// Shape - Vertex
+//
+void beginShape();
+void endShape();
+void endShapeClose(); // Connect the beginning and the end to close the shape
+//void beginContour();
+//void endContour();
+
+void bezierVertex(float c1x, float c1y, float c2x, float c2y, float x, float y);
+//void curveVertex(float x, float y); // Catmull-Rom spline
+void quadraticVertex(float cx, float cy, float x, float y);
+void vertex(float x, float y);
 
 //
 // Shape - 2D Primitives
@@ -203,8 +219,10 @@ void size(int winWidth, int winHeight)
 
     if (window)
     {
-        glfwDestroyWindow(window);
+        glfwSetWindowSize(window, winWidth, winHeight);
+        return;
     }
+
     window = glfwCreateWindow(winWidth, winHeight, "sketch", NULL, NULL);
     if (!window)
     {
@@ -239,65 +257,52 @@ void quit()
     glfwSetWindowShouldClose(window, 1);
 }
 
-static void _beginShape()
-{
-    nvgBeginPath(vg);
-}
-
-static void _endShape()
-{
-    if (isFill) nvgFill(vg);
-    if (isStroke) nvgStroke(vg);
-}
-
 void ellipse(float cx, float cy, float rx, float ry)
 {
-    _beginShape();
+    beginShape();
     nvgEllipse(vg, cx, cy, rx, ry);
-    _endShape();
+    endShape();
 }
 
 void rect(float x, float y, float w, float h)
 {
-    _beginShape();
+    beginShape();
     nvgRect(vg, x, y, w, h);
-    _endShape();
+    endShape();
 }
 
 void roundedRect(float x, float y, float w, float h, float r)
 {
-    _beginShape();
+    beginShape();
     nvgRoundedRect(vg, x, y, w, h, r);
-    _endShape();
+    endShape();
 }
 
 void triangle(float x1, float y1, float x2, float y2, float x3, float y3)
 {
-    _beginShape();
-    nvgMoveTo(vg, x1, y1);
-    nvgLineTo(vg, x2, y2);
-    nvgLineTo(vg, x3, y3);
-    nvgClosePath(vg);
-    _endShape();
+    beginShape();
+    vertex(x1, y1);
+    vertex(x2, y2);
+    vertex(x3, y3);
+    endShapeClose();
 }
 
 void quad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
 {
-    _beginShape();
-    nvgMoveTo(vg, x1, y1);
-    nvgLineTo(vg, x2, y2);
-    nvgLineTo(vg, x3, y3);
-    nvgLineTo(vg, x4, y4);
-    nvgClosePath(vg);
-    _endShape();
+    beginShape();
+    vertex(x1, y1);
+    vertex(x2, y2);
+    vertex(x3, y3);
+    vertex(x4, y4);
+    endShapeClose();
 }
 
 void line(float x1, float y1, float x2, float y2)
 {
-    _beginShape();
-    nvgMoveTo(vg, x1, y1);
-    nvgLineTo(vg, x2, y2);
-    _endShape();
+    beginShape();
+    vertex(x1, y1);
+    vertex(x2, y2);
+    endShape();
 }
 
 void point(float x, float y)
@@ -363,10 +368,10 @@ void image(PImage img, int x, int y, int w, int h)
     popStyle();
 }
 
-static struct NVGcolor backgroundColor = {0.5f, 0.5f, 0.5f, 1.0f};
 void background(struct NVGcolor color)
 {
-    backgroundColor = color;
+    glClearColor(color.r, color.g, color.b, color.a);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void fill(struct NVGcolor color)
@@ -466,9 +471,19 @@ struct NVGcolor color(unsigned char r, unsigned char g, unsigned char b)
     return nvgRGB(r, g, b);
 }
 
+struct NVGcolor colorA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+    return nvgRGBA(r, g, b, a);
+}
+
 struct NVGcolor gray(unsigned char v)
 {
     return nvgRGB(v, v, v);
+}
+
+struct NVGcolor grayA(unsigned char v, unsigned char a)
+{
+    return nvgRGBA(v, v, v, a);
 }
 
 struct NVGcolor lerpColor(struct NVGcolor c0, struct NVGcolor c1, float u)
@@ -517,7 +532,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
-    size(800, 600);
+    size(1024, 768);
 
     setup();
 
@@ -569,8 +584,7 @@ int main()
 
         // render
         glViewport(0, 0, fbWidth, fbHeight);
-        glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         nvgBeginFrame(vg, width, height, pxRatio);
 
@@ -690,6 +704,88 @@ void textBlur(float blur)
 float textWidth(const char* string)
 {
     return nvgTextBounds(vg, 0, 0, string, NULL, NULL);
+}
+
+static GLboolean isInsideShape = GL_FALSE;
+static GLboolean isFirstVertex = GL_TRUE;
+
+void beginShape()
+{
+    if (isInsideShape)
+    {
+        printf("WARNING: endShape() is not called before beginShape().\n");
+    }
+    nvgBeginPath(vg);
+
+    isInsideShape = GL_TRUE;
+    isFirstVertex = GL_TRUE;
+}
+
+void endShape()
+{
+    if (!isInsideShape)
+    {
+        printf("WARNING: beginShape() is not called before endShape().\n");
+    }
+
+    if (isFill) nvgFill(vg);
+    if (isStroke) nvgStroke(vg);
+
+    isInsideShape = GL_FALSE;
+}
+
+void endShapeClose()
+{
+    nvgClosePath(vg);
+    endShape();
+}
+
+void beginContour()
+{
+
+}
+
+void endContour()
+{
+
+}
+
+static GLboolean _checkFirstVertex(float x, float y)
+{
+    if (isFirstVertex)
+    {
+        isFirstVertex = GL_FALSE;
+        nvgMoveTo(vg, x, y);
+
+        return GL_TRUE;
+    }
+    return GL_FALSE;
+}
+
+void bezierVertex(float c1x, float c1y, float c2x, float c2y, float x, float y)
+{
+    if (!_checkFirstVertex(x,y))
+    {
+        nvgBezierTo(vg, c1x, c1y, c2x, c2y, x, y);
+    }
+}
+
+void curveVertex(float x, float y)
+{
+
+}
+
+void quadraticVertex(float cx, float cy, float x, float y)
+{
+
+}
+
+void vertex(float x, float y)
+{
+    if (!_checkFirstVertex(x,y))
+    {
+        nvgLineTo(vg, x, y);
+    }
 }
 
 #endif // SKETCH_2D_IMPLEMENTATION
