@@ -1,3 +1,4 @@
+-- http://industriousone.com/scripting-reference
 
 local action = _ACTION or ""
 
@@ -6,17 +7,18 @@ solution "island"
     configurations { "Debug", "Release" }
     platforms {"native", "x64", "x32"}
     language "C"
+    targetdir ("bin")
 
     configuration "vs*"
         defines { "_CRT_SECURE_NO_WARNINGS" }
 
     configuration "Debug"
-        targetdir ("bin/Debug")
+        targetdir ("bin")
         defines { "DEBUG" }
         flags { "Symbols"}
+        targetsuffix "-d"
 
     configuration "Release"
-        targetdir ("bin/Release")
         defines { "NDEBUG" }
         flags { "Optimize"}
 
@@ -121,14 +123,30 @@ solution "island"
                 "3rdparty/lua/src",
                 "3rdparty/stb"
             }
-            links {
-                "glfw",
-                "glew",
-                "nanovg",
-                "libuv",
-                "lua",
-                "stb",
+
+            libdirs {
+                "bin"
             }
+
+            configuration "Debug"
+                links {
+                    "glfw-d",
+                    "glew-d",
+                    "nanovg-d",
+                    "libuv-d",
+                    "lua-d",
+                    "stb-d",
+                }
+
+            configuration "Release"
+                links {
+                    "glfw",
+                    "glew",
+                    "nanovg",
+                    "libuv",
+                    "lua",
+                    "stb",
+                }
 
             configuration "windows"
                 links {
