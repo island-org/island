@@ -14,16 +14,22 @@
 #pragma warning(disable: 4244)  // conversion from 'float' to 'int', possible loss of data
 #endif
 
+//
 // Processing framework - virtual functions that you must implement.
+//
 void setup();
 void draw();
 void shutdown();
 
+//
 // Structure
+//
 void pushStyle();
 void popStyle();
 
+//
 // Math - Trigonometry
+//
 float degrees(float rad);
 float radians(float deg);
 
@@ -36,7 +42,9 @@ float green(struct NVGcolor color);
 float blue(struct NVGcolor color);
 float alpha(struct NVGcolor color);
 
+//
 // Image
+//
 typedef struct
 {
     int id;
@@ -44,26 +52,48 @@ typedef struct
     int width;
     int height;
 }PImage;
+
 // Supports jpg, png, psd, tga, pic and gif
 PImage loadImage(const char* filename);
 PImage createImage(int w, int h);
 void updateImage(PImage img, const unsigned char* data);
-void deleteImage(PImage img);
 void image(PImage img, int x, int y, int w, int h);
 
-// Output - Image
 // Supports png, tga, bmp
 void saveFrame(const char* filename);
 
+//
+// Typography 
+//
+typedef struct
+{
+    int id;
+}PFont;
+
+PFont loadFont(const char* filename);
+void textFont(PFont font);
+void text(const char* string, float x, float y);
+
+void textAlign(enum NVGalign align);
+void textLeading(float spacing);
+void textSize(float size);
+void textBlur(float blur);
+
+float textWidth(const char* string);
+
+//
 // Environment
+//
 void size(int winWidth, int winHeight);
 void cursor();
 void noCursor();
 void quit();
 extern int width, height;
 
+//
 // Shape - 2D Primitives
-//void arc(float cx, float cy, float r, float a0, float a1, int dir);
+//
+void arc(float cx, float cy, float r, float a0, float a1, int dir);
 void ellipse(float cx, float cy, float rx, float ry);
 void line(float x1, float y1, float x2, float y2);
 void point(float x, float y);
@@ -72,12 +102,16 @@ void rect(float x, float y, float w, float h);
 void roundedRect(float x, float y, float w, float h, float r);
 void triangle(float x1, float y1, float x2, float y2, float x3, float y3);
 
+//
 // Shape - Attributes
+//
 void strokeCap(int cap); // NVG_BUTT (default), NVG_ROUND, NVG_SQUARE
 void strokeJoin(int join); // NVG_MITER (default), NVG_ROUND, NVG_BEVEL
 void strokeWeight(float weight);
 
+//
 // Input - Mouse
+//
 extern float mouseX, mouseY;
 extern float pmouseX, pmouseY;
 extern int mousePressed;
@@ -89,14 +123,20 @@ enum
 };
 extern int mouseButton;
 
+//
 // Input - Keyboard
+//
 extern int keyPressed;
 extern int key;
 
+//
 // Input - Time & Date
+//
 float millis();
 
+//
 // Transform 
+//
 void pushMatrix();
 void popMatrix();
 void printMatrix();
@@ -109,7 +149,9 @@ void scale(float x, float y);
 void shearX(float angle);
 void shearY(float angle);
 
+//
 // Color
+//
 void background(struct NVGcolor color);
 void fill(struct NVGcolor color);
 void noFill();
@@ -307,11 +349,6 @@ PImage createImage(int w, int h)
 void updateImage(PImage img, const unsigned char* data)
 {
     nvgUpdateImage(vg, img.id, data);
-}
-
-void deleteImage(PImage img)
-{
-    nvgDeleteImage(vg, img.id);
 }
 
 void image(PImage img, int x, int y, int w, int h)
@@ -603,6 +640,56 @@ void saveFrame(const char* name)
         printf("Unsupported image format %s.\n", name);
     }
     free(image);
+}
+
+PFont loadFont(const char* filename)
+{
+    PFont font = 
+    {
+        nvgCreateFont(vg, filename, filename),
+    };
+    if (font.id == -1)
+    {
+        printf("Can't load font %s.\n", filename);
+        exit(1);
+    }
+
+    return font;
+}
+
+void text(const char* string, float x, float y)
+{
+    nvgText(vg, x, y, string, NULL);
+}
+
+void textFont(PFont font)
+{
+    nvgFontFaceId(vg, font.id);
+}
+
+void textAlign(enum NVGalign align)
+{
+    nvgTextAlign(vg, align);
+}
+
+void textLeading(float spacing)
+{
+    nvgTextLetterSpacing(vg, spacing);
+}
+
+void textSize(float size)
+{
+    nvgFontSize(vg, size);
+}
+
+void textBlur(float blur)
+{
+    nvgFontBlur(vg, blur);
+}
+
+float textWidth(const char* string)
+{
+    return nvgTextBounds(vg, 0, 0, string, NULL, NULL);
 }
 
 #endif // SKETCH_2D_IMPLEMENTATION
