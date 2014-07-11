@@ -9,13 +9,14 @@
 #include <nanovg_gl.h>
 #include <stdio.h>
 #include <stb/stb_image_write.h>
+#include <stb/stb_perlin.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4244)  // conversion from 'float' to 'int', possible loss of data
 #endif
 
 //
-// Processing framework - virtual functions that you must implement.
+// Processing framework - pure virtual functions that you must implement.
 //
 void setup();
 void draw();
@@ -149,6 +150,13 @@ extern int key;
 // Input - Time & Date
 //
 float millis();
+
+//
+// Math - Random
+//
+//float noise(float x);
+//float noise(float x, float y);
+float noise(float x, float y, float z);
 
 //
 // Transform 
@@ -786,6 +794,11 @@ void vertex(float x, float y)
     {
         nvgLineTo(vg, x, y);
     }
+}
+
+float noise(float x, float y, float z)
+{
+    stb_perlin_noise3(x, y, z, 0, 0, 0);
 }
 
 #endif // SKETCH_2D_IMPLEMENTATION
