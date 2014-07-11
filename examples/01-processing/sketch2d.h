@@ -785,7 +785,10 @@ void curveVertex(float x, float y)
 
 void quadraticVertex(float cx, float cy, float x, float y)
 {
-
+    if (!_checkFirstVertex(x,y))
+    {
+        nvgQuadTo(vg, cx, cy, x, y);
+    }
 }
 
 void vertex(float x, float y)
@@ -798,7 +801,7 @@ void vertex(float x, float y)
 
 float noise(float x, float y, float z)
 {
-    stb_perlin_noise3(x, y, z, 0, 0, 0);
+    return stb_perlin_noise3(x, y, z, 0, 0, 0);
 }
 
 #endif // SKETCH_2D_IMPLEMENTATION
