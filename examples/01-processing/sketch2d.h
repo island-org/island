@@ -38,7 +38,7 @@ float radians(float deg);
 struct NVGcolor color(unsigned char r, unsigned char g, unsigned char b);
 struct NVGcolor colorA(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 struct NVGcolor gray(unsigned char v);
-struct NVGcolor grayAlpha(unsigned char v, unsigned char a);
+struct NVGcolor grayA(unsigned char v, unsigned char a);
 struct NVGcolor lerpColor(struct NVGcolor c0, struct NVGcolor c1, float u);
 float red(struct NVGcolor color);
 float green(struct NVGcolor color);
