@@ -9,6 +9,10 @@
 #include <nanovg_gl.h>
 #include <stdio.h>
 
+#ifdef _MSC_VER
+#pragma warning(disable: 4244)  // conversion from 'float' to 'int', possible loss of data
+#endif
+
 // Processing framework - virtual functions that you must implement.
 void setup();
 void draw();
@@ -31,28 +35,44 @@ float green(struct NVGcolor color);
 float blue(struct NVGcolor color);
 float alpha(struct NVGcolor color);
 
+// Image
+typedef struct
+{
+    int id;
+    GLuint tex; // OpenGL texture id
+    int width;
+    int height;
+}PImage;
+// Supports jpg, png, psd, tga, pic and gif
+PImage loadImage(const char* filename);
+PImage createImage(int w, int h);
+void updateImage(PImage img, const unsigned char* data);
+void deleteImage(PImage img);
+void image(PImage img, int x, int y, int w, int h);
+
 // Environment
 void size(int winWidth, int winHeight);
 void cursor();
 void noCursor();
+void quit();
 extern int width, height;
 
 // Shape - 2D Primitives
-void arc(float cx, float cy, float r, float a0, float a1, int dir);
+//void arc(float cx, float cy, float r, float a0, float a1, int dir);
 void ellipse(float cx, float cy, float rx, float ry);
-void line();
-void point();
-void quad();
+void line(float x1, float y1, float x2, float y2);
+void point(float x, float y);
+void quad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 void rect(float x, float y, float w, float h);
 void roundedRect(float x, float y, float w, float h, float r);
-void triangle();
+void triangle(float x1, float y1, float x2, float y2, float x3, float y3);
 
 // Shape - Attributes
 void strokeCap(int cap); // NVG_BUTT (default), NVG_ROUND, NVG_SQUARE
 void strokeJoin(int join); // NVG_MITER (default), NVG_ROUND, NVG_BEVEL
 void strokeWeight(float weight);
 
-// Mouse
+// Input - Mouse
 extern float mouseX, mouseY;
 extern float pmouseX, pmouseY;
 extern int mousePressed;
@@ -64,9 +84,12 @@ enum
 };
 extern int mouseButton;
 
-// Keyboard
+// Input - Keyboard
 extern int keyPressed;
 extern int key;
+
+// Input - Time & Date
+float millis();
 
 // Transform 
 void pushMatrix();
@@ -90,6 +113,7 @@ void noStroke();
 
 #endif // SKETCH_2D_H
 
+
 #ifdef SKETCH_2D_IMPLEMENTATION
 
 float mouseX, mouseY;
@@ -110,6 +134,11 @@ static int isStroke = 1;
 int keyPressed;
 int key;
 
+float millis()
+{
+    return glfwGetTime() * 0.001f;
+}
+
 void cursor()
 {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -122,6 +151,9 @@ void noCursor()
 
 void size(int winWidth, int winHeight)
 {
+    static GLboolean sGlewInitialzed = GL_FALSE;
+    GLenum err;
+
     if (window)
     {
         glfwDestroyWindow(window);
@@ -130,16 +162,42 @@ void size(int winWidth, int winHeight)
     if (!window)
     {
         glfwTerminate();
+        exit(1);
     }
     glfwMakeContextCurrent(window);
+
+    if (!sGlewInitialzed)
+    {
+        sGlewInitialzed = GL_TRUE;
+        glewExperimental = GL_TRUE;
+        err = glewInit();
+        if (err != GLEW_OK)
+        {
+            printf("Error: %s\n", glewGetErrorString(err));
+        }
+        // GLEW generates GL error because it calls glGetString(GL_EXTENSIONS), we'll consume it here.
+        glGetError();
+    }
+
+    vg = nvgCreateGL3(NVG_STENCIL_STROKES);
+    if (vg == NULL)
+    {
+        printf("Could not init nanovg.\n");
+        exit(1);
+    }
 }
 
-static void beginShape()
+void quit()
+{
+    glfwSetWindowShouldClose(window, 1);
+}
+
+static void _beginShape()
 {
     nvgBeginPath(vg);
 }
 
-static void endShape()
+static void _endShape()
 {
     if (isFill) nvgFill(vg);
     if (isStroke) nvgStroke(vg);
@@ -147,23 +205,57 @@ static void endShape()
 
 void ellipse(float cx, float cy, float rx, float ry)
 {
-    beginShape();
+    _beginShape();
     nvgEllipse(vg, cx, cy, rx, ry);
-    endShape();
+    _endShape();
 }
 
 void rect(float x, float y, float w, float h)
 {
-    beginShape();
+    _beginShape();
     nvgRect(vg, x, y, w, h);
-    endShape();
+    _endShape();
 }
 
 void roundedRect(float x, float y, float w, float h, float r)
 {
-    beginShape();
+    _beginShape();
     nvgRoundedRect(vg, x, y, w, h, r);
-    endShape();
+    _endShape();
+}
+
+void triangle(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+    _beginShape();
+    nvgMoveTo(vg, x1, y1);
+    nvgLineTo(vg, x2, y2);
+    nvgLineTo(vg, x3, y3);
+    nvgClosePath(vg);
+    _endShape();
+}
+
+void quad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4)
+{
+    _beginShape();
+    nvgMoveTo(vg, x1, y1);
+    nvgLineTo(vg, x2, y2);
+    nvgLineTo(vg, x3, y3);
+    nvgLineTo(vg, x4, y4);
+    nvgClosePath(vg);
+    _endShape();
+}
+
+void line(float x1, float y1, float x2, float y2)
+{
+    _beginShape();
+    nvgMoveTo(vg, x1, y1);
+    nvgLineTo(vg, x2, y2);
+    _endShape();
+}
+
+void point(float x, float y)
+{
+    ellipse(x, y, 1, 1);
 }
 
 float degrees(float rad)
@@ -174,6 +266,59 @@ float degrees(float rad)
 float radians(float deg)
 {
     return nvgRadToDeg(deg);
+}
+
+PImage loadImage(const char* filename)
+{
+    PImage img = 
+    {
+        nvgCreateImage(vg, filename)
+    };
+    if (img.id == 0)
+    {
+        printf("Could not load %s.\n", filename);
+        exit(1);
+    }
+
+    nvgImageSize(vg, img.id, &img.width, &img.height);
+    img.tex = nvglImageHandle(vg, img.id);
+    
+    return img;
+}
+
+PImage createImage(int w, int h)
+{
+    PImage img = 
+    {
+        nvgCreateImageRGBA(vg, w, h, NULL),
+        w,
+        h
+    };
+    img.tex = nvglImageHandle(vg, img.id);
+
+    return img;
+}
+
+void updateImage(PImage img, const unsigned char* data)
+{
+    nvgUpdateImage(vg, img.id, data);
+}
+
+void deleteImage(PImage img)
+{
+    nvgDeleteImage(vg, img.id);
+}
+
+void image(PImage img, int x, int y, int w, int h)
+{
+    struct NVGpaint paint = nvgImagePattern(vg, x, y, w, h, 0, img.id, 0, 1);
+    pushStyle();
+    {
+        noStroke();
+        nvgFillPaint(vg, paint);
+        rect(x, y, w, h);
+    }
+    popStyle();
 }
 
 static struct NVGcolor backgroundColor = {0.5f, 0.5f, 0.5f, 1.0f};
@@ -316,8 +461,6 @@ static void onGlfwError(int error, const char* desc)
 
 int main()
 {
-    GLenum err;
-
     if (!glfwInit())
     {
         printf("Failed to init GLFW.");
@@ -333,27 +476,8 @@ int main()
 #endif
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
     size(800, 600);
-    glfwMakeContextCurrent(window);
-
-    // glew
-    glewExperimental = GL_TRUE;
-    err = glewInit();
-    if (err != GLEW_OK)
-    {
-        printf("Error: %s\n", glewGetErrorString(err));
-        return -1;
-    }
-    // GLEW generates GL error because it calls glGetString(GL_EXTENSIONS), we'll consume it here.
-    glGetError();
 
     setup();
-
-    vg = nvgCreateGL3(NVG_STENCIL_STROKES);
-    if (vg == NULL)
-    {
-        printf("Could not init nanovg.\n");
-        return -1;
-    }
 
     while (!glfwWindowShouldClose(window))
     {

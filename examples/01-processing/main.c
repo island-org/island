@@ -1,32 +1,37 @@
 #define SKETCH_2D_IMPLEMENTATION
 #include "sketch2d.h"
 
+PImage img;
+
 void setup()
 {
     size(600, 600);
     noCursor();
+    img = loadImage("../3rdparty/nanovg/example/screenshot-01.png");
 }
 
 void draw()
 {
-    if (keyPressed && key == GLFW_KEY_ESCAPE)
+    if (keyPressed)
     {
-        ellipse(mouseX, mouseY, 100, 100);
+        if (key == GLFW_KEY_ESCAPE)
+        {
+            quit();
+        }
     }
 
     if (mousePressed)
     {
-        fill(color(mouseButton == LEFT ? 255 : 0, 0, 0));
+        image(img, mouseX, mouseY, img.width, img.height);
     }
     else
     {
-        noFill();
+        image(img, mouseX, mouseY, img.width / 2, img.height / 2);
     }
-    ellipse(mouseX, mouseY, 10, 10);
 }
 
 void shutdown()
 {
-
+    deleteImage(img);
 }
 
