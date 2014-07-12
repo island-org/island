@@ -62,13 +62,6 @@ solution "island"
         kind "StaticLib"
         files { "3rdparty/nanovg/src/*" }
 
-    project "imgui"
-        kind "StaticLib"
-        files { 
-            "3rdparty/imgui/imgui.h",
-            "3rdparty/imgui/imgui.cpp" 
-        }
-
     project "libuv"
         kind "StaticLib"
         includedirs { "3rdparty/libuv/include" }
@@ -110,6 +103,13 @@ solution "island"
             "3rdparty/stb/*.c" 
         }
 
+    project "imgui"
+        kind "StaticLib"
+        files { 
+            "3rdparty/imgui/imgui.h",
+            "3rdparty/imgui/imgui.c" 
+        }
+
     function create_example_project( example_path )
         example_path = string.sub(example_path, string.len("examples/") + 1);
         project (example_path)
@@ -126,7 +126,8 @@ solution "island"
                 "3rdparty/nanovg/src",
                 "3rdparty/libuv/src",
                 "3rdparty/lua/src",
-                "3rdparty/stb"
+                "3rdparty/stb",
+                "3rdparty/imgui",
             }
 
             libdirs {
@@ -138,10 +139,10 @@ solution "island"
                     "glfw-d",
                     "glew-d",
                     "nanovg-d",
-                    "imgui-d",
                     "libuv-d",
                     "lua-d",
                     "stb-d",
+                    "imgui-d",
                 }
 
             configuration "Release"
@@ -149,10 +150,10 @@ solution "island"
                     "glfw",
                     "glew",
                     "nanovg",
-                    "imgui",
                     "libuv",
                     "lua",
                     "stb",
+                    "imgui",
                 }
 
             configuration "windows"
