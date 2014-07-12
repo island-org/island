@@ -52,7 +52,6 @@ solution "island"
 
     project "glew"
         kind "StaticLib"
-        includedirs { "3rdparty/glew" }
         files { 
             "3rdparty/glew/GL/*.h",
             "3rdparty/glew/*.c" 
@@ -61,8 +60,14 @@ solution "island"
 
     project "nanovg"
         kind "StaticLib"
-        includedirs { "3rdparty/nanovg/src" }
         files { "3rdparty/nanovg/src/*" }
+
+    project "imgui"
+        kind "StaticLib"
+        files { 
+            "3rdparty/imgui/imgui.h",
+            "3rdparty/imgui/imgui.cpp" 
+        }
 
     project "libuv"
         kind "StaticLib"
@@ -133,6 +138,7 @@ solution "island"
                     "glfw-d",
                     "glew-d",
                     "nanovg-d",
+                    "imgui-d",
                     "libuv-d",
                     "lua-d",
                     "stb-d",
@@ -143,6 +149,7 @@ solution "island"
                     "glfw",
                     "glew",
                     "nanovg",
+                    "imgui",
                     "libuv",
                     "lua",
                     "stb",
