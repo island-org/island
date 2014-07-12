@@ -92,6 +92,7 @@ void cursor();
 void noCursor();
 void quit();
 extern int width, height;
+extern int displayWidth, displayHeight;
 
 //
 // Shape - Vertex
@@ -193,6 +194,7 @@ int mousePressed;
 int mouseButton;
 
 int width, height;
+int displayWidth, displayHeight;
 
 static GLFWwindow* window;
 static int fbWidth, fbHeight;
@@ -227,6 +229,7 @@ void size(int winWidth, int winHeight)
 
     if (window)
     {
+        // Resize existed window
         glfwSetWindowSize(window, winWidth, winHeight);
         return;
     }
@@ -332,7 +335,7 @@ PImage loadImage(const char* filename)
 {
     PImage img = 
     {
-        nvgCreateImage(vg, filename)
+        nvgCreateImage(vg, filename, NVG_IMAGE_GENERATE_MIPMAPS)
     };
     if (img.id == 0)
     {
@@ -350,7 +353,7 @@ PImage createImage(int w, int h)
 {
     PImage img = 
     {
-        nvgCreateImageRGBA(vg, w, h, NULL),
+        nvgCreateImageRGBA(vg, w, h, NVG_IMAGE_GENERATE_MIPMAPS, NULL),
         w,
         h
     };
@@ -526,6 +529,8 @@ static void onGlfwError(int error, const char* desc)
 
 int main()
 {
+    const GLFWvidmode* vidMode;
+
     if (!glfwInit())
     {
         printf("Failed to init GLFW.");
@@ -541,6 +546,12 @@ int main()
 #endif
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
     size(1024, 768);
+
+    glfwSetTime(0);
+
+    vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    displayWidth = vidMode->width;
+    displayHeight = vidMode->height;
 
     setup();
 

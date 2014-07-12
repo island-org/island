@@ -6,7 +6,7 @@ PFont font;
 
 void setup()
 {
-    size(800, 600);
+    size(displayWidth, displayHeight);
     noCursor();
     img1 = loadImage("../3rdparty/nanovg/example/images/image9.jpg");
     img2 = loadImage("../3rdparty/nanovg/example/images/image10.jpg");
