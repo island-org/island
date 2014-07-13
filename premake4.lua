@@ -135,6 +135,7 @@ solution "island"
                 "3rdparty/lua/src",
                 "3rdparty/stb",
                 "3rdparty/imgui",
+                "3rdparty/AntTweakBar/include",
             }
 
             libdirs {
@@ -150,6 +151,7 @@ solution "island"
                     "lua-d",
                     "stb-d",
                     "imgui-d",
+                    "AntTweakBar-d",
                 }
 
             configuration "Release"
@@ -161,6 +163,7 @@ solution "island"
                     "lua",
                     "stb",
                     "imgui",
+                    "AntTweakBar",
                 }
 
             configuration "windows"

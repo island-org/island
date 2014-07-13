@@ -14,6 +14,7 @@
 #pragma warning(disable: 4244)  // conversion from 'float' to 'int', possible loss of data
 #endif
 
+extern GLFWwindow* window;
 //
 // Processing framework - pure virtual functions that you must implement.
 //
@@ -149,7 +150,7 @@ extern int key;
 //
 // Input - Time & Date
 //
-float millis();
+double millis();
 
 //
 // Math - Random
@@ -199,7 +200,7 @@ int mouseButton;
 int width, height;
 int displayWidth, displayHeight;
 
-static GLFWwindow* window;
+GLFWwindow* window;
 static int fbWidth, fbHeight;
 
 static struct NVGcontext* vg;
@@ -210,9 +211,9 @@ static int isStroke = 1;
 int keyPressed;
 int key;
 
-float millis()
+double millis()
 {
-    return glfwGetTime() * 0.001f;
+    return glfwGetTime() * 1000;
 }
 
 void cursor()
@@ -237,12 +238,15 @@ void size(int winWidth, int winHeight)
         return;
     }
 
+    //glfwWindowHint(GLFW_DECORATED, 0);
     window = glfwCreateWindow(winWidth, winHeight, "sketch", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
         exit(1);
     }
+
+    glfwGetWindowSize(window, &width, &height);
     glfwMakeContextCurrent(window);
 
     if (!sGlewInitialzed)
