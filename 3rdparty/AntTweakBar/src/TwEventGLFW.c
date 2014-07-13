@@ -19,7 +19,7 @@
 #include <AntTweakBar.h>
 
 
-int TW_CALL TwEventMouseButtonGLFW(int glfwButton, int glfwAction)
+void TwEventMouseButtonGLFW(GLFWwindow* window, int glfwButton, int glfwAction, int glfwMods)
 {
     int handled = 0;
     TwMouseAction action = (glfwAction==GLFW_PRESS) ? TW_MOUSE_PRESSED : TW_MOUSE_RELEASED;
@@ -31,14 +31,14 @@ int TW_CALL TwEventMouseButtonGLFW(int glfwButton, int glfwAction)
     else if( glfwButton==GLFW_MOUSE_BUTTON_MIDDLE )
         handled = TwMouseButton(action, TW_MOUSE_MIDDLE);
 
-    return handled;
+    //return handled;
 }
 
 
 int g_KMod = 0;
 
 
-int TW_CALL TwEventKeyGLFW(int glfwKey, int glfwAction)
+void TwEventKeyGLFW(GLFWwindow* window, int glfwKey, int glfwScancode, int glfwAction, int glfwMods)
 {
     int handled = 0;
 
@@ -177,36 +177,22 @@ int TW_CALL TwEventKeyGLFW(int glfwKey, int glfwAction)
         }
     }
 
-    return handled;
+    //return handled;
 }
 
 
-int TW_CALL TwEventCharGLFW(int glfwChar, int glfwAction)
+void TwEventCharGLFW(GLFWwindow* window, unsigned int glfwCodepoint)
 {
-    if( glfwAction==GLFW_PRESS && (glfwChar & 0xff00)==0 )
-        return TwKeyPressed(glfwChar, g_KMod);
-
-    return 0;
+    if((glfwCodepoint & 0xff00)==0 )
+        TwKeyPressed(glfwCodepoint, g_KMod);
 }
 
-// functions with __cdecl calling convension
-TW_API int TW_CDECL_CALL TwEventMouseButtonGLFWcdecl(int glfwButton, int glfwAction)
+void TwEvenCursorPosGLFW(GLFWwindow* window, double mouseX, double mouseY)
 {
-    return TwEventMouseButtonGLFW(glfwButton, glfwAction);
+    TwMouseMotion((int)mouseX, (int)mouseY);
 }
-TW_API int TW_CDECL_CALL TwEventKeyGLFWcdecl(int glfwKey, int glfwAction)
+
+void TwEventScrollGLFW(GLFWwindow* window, double offsetX, double offsetY)
 {
-    return TwEventKeyGLFW(glfwKey, glfwAction);
-}
-TW_API int TW_CDECL_CALL TwEventCharGLFWcdecl(int glfwChar, int glfwAction)
-{
-    return TwEventCharGLFW(glfwChar, glfwAction);
-}
-TW_API int TW_CDECL_CALL TwEventMousePosGLFWcdecl(int mouseX, int mouseY)
-{
-    return TwMouseMotion(mouseX, mouseY);
-}
-TW_API int TW_CDECL_CALL TwEventMouseWheelGLFWcdecl(int wheelPos)
-{
-    return TwMouseWheel(wheelPos);
+    TwMouseWheel((int)offsetY);
 }

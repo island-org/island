@@ -303,25 +303,11 @@ TW_API void     TW_CALL TwHandleErrors(TwErrorHandler errorHandler);
 TW_API int      TW_CALL TwEventSDL(const void *sdlEvent, unsigned char sdlMajorVersion, unsigned char sdlMinorVersion);
 
 // For GLFW event callbacks
-// You should define GLFW_CDECL before including AntTweakBar.h if your version of GLFW uses cdecl calling convensions
-#ifdef GLFW_CDECL
-    TW_API int TW_CDECL_CALL TwEventMouseButtonGLFWcdecl(int glfwButton, int glfwAction);
-    TW_API int TW_CDECL_CALL TwEventKeyGLFWcdecl(int glfwKey, int glfwAction);
-    TW_API int TW_CDECL_CALL TwEventCharGLFWcdecl(int glfwChar, int glfwAction);
-    TW_API int TW_CDECL_CALL TwEventMousePosGLFWcdecl(int mouseX, int mouseY);
-    TW_API int TW_CDECL_CALL TwEventMouseWheelGLFWcdecl(int wheelPos);
-#   define TwEventMouseButtonGLFW TwEventMouseButtonGLFWcdecl
-#   define TwEventKeyGLFW         TwEventKeyGLFWcdecl
-#   define TwEventCharGLFW        TwEventCharGLFWcdecl
-#   define TwEventMousePosGLFW    TwEventMousePosGLFWcdecl
-#   define TwEventMouseWheelGLFW  TwEventMouseWheelGLFWcdecl
-#else
-    TW_API int  TW_CALL TwEventMouseButtonGLFW(int glfwButton, int glfwAction);
-    TW_API int  TW_CALL TwEventKeyGLFW(int glfwKey, int glfwAction);
-    TW_API int  TW_CALL TwEventCharGLFW(int glfwChar, int glfwAction);
-#   define TwEventMousePosGLFW     TwMouseMotion
-#   define TwEventMouseWheelGLFW   TwMouseWheel
-#endif
+void TwEventMouseButtonGLFW(struct GLFWwindow* window, int glfwButton, int glfwAction, int glfwMods);
+void TwEventKeyGLFW(struct GLFWwindow* window, int glfwKey, int glfwScancode, int glfwAction, int glfwMods);
+void TwEventCharGLFW(struct GLFWwindow* window, unsigned int glfwCodepoint);
+void TwEvenCursorPosGLFW(struct GLFWwindow* window, double mouseX, double mouseY);
+void TwEventScrollGLFW(struct GLFWwindow* window, double offsetX, double offsetY);
 
 // For GLUT event callbacks (Windows calling convention for GLUT callbacks is cdecl)
 #if defined(_WIN32) || defined(_WIN64)
