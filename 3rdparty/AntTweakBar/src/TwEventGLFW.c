@@ -12,7 +12,7 @@
 //  ---------------------------------------------------------------------------
 
 // #include <GL/glfw.h>
-#include "MiniGLFW.h" // a subset of GLFW.h needed to compile TwEventGLFW.c
+#include "GLFW/glfw3.h" // a subset of GLFW.h needed to compile TwEventGLFW.c
 // note: AntTweakBar.dll does not need to link with GLFW, 
 // it just needs some definitions for its helper functions.
 
@@ -47,16 +47,16 @@ int TW_CALL TwEventKeyGLFW(int glfwKey, int glfwAction)
     {
         switch( glfwKey )
         {
-        case GLFW_KEY_LSHIFT:
-        case GLFW_KEY_RSHIFT:
+        case GLFW_KEY_LEFT_SHIFT:
+        case GLFW_KEY_RIGHT_SHIFT:
             g_KMod |= TW_KMOD_SHIFT;
             break;
-        case GLFW_KEY_LCTRL:
-        case GLFW_KEY_RCTRL:
+        case GLFW_KEY_LEFT_CONTROL:
+        case GLFW_KEY_RIGHT_CONTROL:
             g_KMod |= TW_KMOD_CTRL;
             break;
-        case GLFW_KEY_LALT:
-        case GLFW_KEY_RALT:
+        case GLFW_KEY_LEFT_ALT:
+        case GLFW_KEY_RIGHT_ALT:
             g_KMod |= TW_KMOD_ALT;
             break;
         }
@@ -65,16 +65,16 @@ int TW_CALL TwEventKeyGLFW(int glfwKey, int glfwAction)
     {
         switch( glfwKey )
         {
-        case GLFW_KEY_LSHIFT:
-        case GLFW_KEY_RSHIFT:
+        case GLFW_KEY_LEFT_SHIFT:
+        case GLFW_KEY_RIGHT_SHIFT:
             g_KMod &= ~TW_KMOD_SHIFT;
             break;
-        case GLFW_KEY_LCTRL:
-        case GLFW_KEY_RCTRL:
+        case GLFW_KEY_LEFT_CONTROL:
+        case GLFW_KEY_RIGHT_CONTROL:
             g_KMod &= ~TW_KMOD_CTRL;
             break;
-        case GLFW_KEY_LALT:
-        case GLFW_KEY_RALT:
+        case GLFW_KEY_LEFT_ALT:
+        case GLFW_KEY_RIGHT_ALT:
             g_KMod &= ~TW_KMOD_ALT;
             break;
         }
@@ -86,9 +86,9 @@ int TW_CALL TwEventKeyGLFW(int glfwKey, int glfwAction)
         int mod = g_KMod;
         int testkp = ((mod&TW_KMOD_CTRL) || (mod&TW_KMOD_ALT)) ? 1 : 0;
 
-        if( (mod&TW_KMOD_CTRL) && glfwKey>0 && glfwKey<GLFW_KEY_SPECIAL )   // CTRL cases
+        if( (mod&TW_KMOD_CTRL) && glfwKey>0 && glfwKey<GLFW_KEY_ESCAPE )   // CTRL cases
             handled = TwKeyPressed(glfwKey, mod);
-        else if( glfwKey>=GLFW_KEY_SPECIAL )
+        else if( glfwKey>=GLFW_KEY_ESCAPE )
         {
             int k = 0;
 
@@ -100,7 +100,7 @@ int TW_CALL TwEventKeyGLFW(int glfwKey, int glfwAction)
             {
                 switch( glfwKey )
                 {
-                case GLFW_KEY_ESC:
+                case GLFW_KEY_ESCAPE:
                     k = TW_KEY_ESCAPE;
                     break;
                 case GLFW_KEY_UP:
@@ -127,13 +127,13 @@ int TW_CALL TwEventKeyGLFW(int glfwKey, int glfwAction)
                 case GLFW_KEY_INSERT:
                     k = TW_KEY_INSERT;
                     break;
-                case GLFW_KEY_DEL:
+                case GLFW_KEY_DELETE:
                     k = TW_KEY_DELETE;
                     break;
-                case GLFW_KEY_PAGEUP:
+                case GLFW_KEY_PAGE_UP:
                     k = TW_KEY_PAGE_UP;
                     break;
-                case GLFW_KEY_PAGEDOWN:
+                case GLFW_KEY_PAGE_DOWN:
                     k = TW_KEY_PAGE_DOWN;
                     break;
                 case GLFW_KEY_HOME:

@@ -85,7 +85,7 @@
 #   if defined(ANT_OSX)
 #   	include <OpenGL/gl.h>
 #   else
-#	    include "glew/glew.h"  // must be included after windows.h
+#	    include "GL/glew.h"  // must be included after windows.h
 #   endif
 #   define  ANT_OGL_HEADER_INCLUDED
 #endif

@@ -8,6 +8,7 @@ solution "island"
     platforms {"native", "x64", "x32"}
     language "C"
     targetdir ("bin")
+    kind "StaticLib"
 
     configuration "vs*"
         defines { "_CRT_SECURE_NO_WARNINGS" }
@@ -23,7 +24,6 @@ solution "island"
         flags { "Optimize"}
 
     project "glfw"
-        kind "StaticLib"
         includedirs { "3rdparty/glfw/include" }
         files { 
             "3rdparty/glfw/include/GLFW/*.h",
@@ -51,7 +51,6 @@ solution "island"
             }
 
     project "glew"
-        kind "StaticLib"
         files { 
             "3rdparty/glew/GL/*.h",
             "3rdparty/glew/*.c" 
@@ -59,11 +58,9 @@ solution "island"
         defines "GLEW_STATIC"
 
     project "nanovg"
-        kind "StaticLib"
         files { "3rdparty/nanovg/src/*" }
 
     project "libuv"
-        kind "StaticLib"
         includedirs { "3rdparty/libuv/include" }
         files { 
             "3rdparty/libuv/include/*.h", 
@@ -82,7 +79,6 @@ solution "island"
 
     project "lua"
         os.copyfile("3rdparty/lua/src/luaconf.h.orig", "3rdparty/lua/src/luaconf.h")
-        kind "StaticLib"
         includedirs { "3rdparty/lua/src" }
         files { 
             "3rdparty/lua/src/*.h",
@@ -96,7 +92,6 @@ solution "island"
         }
 
     project "stb"
-        kind "StaticLib"
         includedirs { "3rdparty/stb" }
         files { 
             "3rdparty/stb/stb/*.h",
@@ -105,10 +100,21 @@ solution "island"
         }
 
     project "imgui"
-        kind "StaticLib"
         files { 
             "3rdparty/imgui/imgui.h",
             "3rdparty/imgui/imgui.c" 
+        }
+
+    project "AntTweakBar"
+        language "C++"
+        includedirs { 
+            "3rdparty/AntTweakBar/include",
+            "3rdparty/glew",
+            "3rdparty/glfw/include",
+        } 
+        files {
+            "3rdparty/AntTweakBar/include/*.h",
+            "3rdparty/AntTweakBar/src/*",
         }
 
     function create_example_project( example_path )
