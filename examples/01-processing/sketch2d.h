@@ -452,7 +452,6 @@ void resetMatrix()
 
 void applyMatrix(float a, float b, float c, float d, float e, float f)
 {
-    nvgTransformIdentity(state->xform);
     nvgTransform(vg, a, b, c, d, e, f);
 }
 

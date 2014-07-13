@@ -35,7 +35,7 @@ enum imguiTextAlign
     IMGUI_ALIGN_RIGHT,
 };
 
-unsigned int imguiRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+static unsigned int imguiRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
     return (r) | (g << 8) | (b << 16) | (a << 24);
 }
