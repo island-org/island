@@ -100,6 +100,7 @@ solution "island"
         includedirs { "3rdparty/stb" }
         files { 
             "3rdparty/stb/stb/*.h",
+            "3rdparty/stb/*.h",
             "3rdparty/stb/*.c" 
         }
 

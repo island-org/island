@@ -107,5 +107,4 @@ typedef struct
 const imguiGfxCmd* imguiGetRenderQueue();
 int imguiGetRenderQueueSize();
 
-
 #endif // IMGUI_H

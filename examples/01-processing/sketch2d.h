@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stb/stb_image_write.h>
 #include <stb/stb_perlin.h>
+#include <stb/stb_vec.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4244)  // conversion from 'float' to 'int', possible loss of data
