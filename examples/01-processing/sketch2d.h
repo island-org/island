@@ -6,10 +6,8 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <nanovg_gl.h>
+#include <nanovg.h>
 #include <stdio.h>
-#include <stb/stb_image_write.h>
-#include <stb/stb_perlin.h>
 #include <stb/stb_vec.h>
 
 #ifdef _MSC_VER
@@ -188,6 +186,10 @@ void noStroke();
 
 
 #ifdef SKETCH_2D_IMPLEMENTATION
+
+#include <nanovg_gl.h>
+#include <stb/stb_image_write.h>
+#include <stb/stb_perlin.h>
 
 float mouseX, mouseY;
 float pmouseX, pmouseY;
