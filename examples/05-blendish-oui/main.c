@@ -107,7 +107,7 @@ void testrect(NVGcontext *vg, UIrect rect)
 #endif
 }
 
-void drawUiBlendish(NVGcontext *vg, int item, int x, int y)
+void drawBlendishUi(NVGcontext *vg, int item, int x, int y)
 {
     const UIData *head = (const UIData *)uiGetData(item);
     UIrect rect = uiGetRect(item);
@@ -121,10 +121,6 @@ void drawUiBlendish(NVGcontext *vg, int item, int x, int y)
     {
         switch (head->subtype) 
         {
-        default: 
-            {
-                testrect(vg,rect);
-            } break;
         case ST_LABEL: 
             {
                 const UIButtonData *data = (UIButtonData*)head;
@@ -162,10 +158,14 @@ void drawUiBlendish(NVGcontext *vg, int item, int x, int y)
                 const UISliderData *data = (UISliderData*)head;
                 BNDwidgetState state = (BNDwidgetState)uiGetState(item);
                 static char value[32];
-                sprintf(value,"%.0f%%", (int)(*data->progress)*100.0f);
+                sprintf(value,"%.0f%%", (*data->progress)*100.0f);
                 bndSlider(vg,rect.x,rect.y,rect.w,rect.h,
                     cornerFlags(item),state,
                     *data->progress,data->label,value);
+            } break;
+        default: 
+            {
+                testrect(vg,rect);
             } break;
         }
     } 
@@ -179,7 +179,7 @@ void drawUiBlendish(NVGcontext *vg, int item, int x, int y)
         int kid = uiFirstChild(item);
         while (kid > 0)
         {
-            drawUiBlendish(vg, kid, rect.x, rect.y);
+            drawBlendishUi(vg, kid, rect.x, rect.y);
             kid = uiNextSibling(kid);
         }
     }
@@ -430,7 +430,7 @@ static int option1 = 1;
 static int option2 = 0;
 static int option3 = 0;
 
-void updateUi(NVGcontext *vg, float w, float h)
+void createUi(NVGcontext *vg, float w, float h)
 {
     int col;
 
@@ -447,15 +447,15 @@ void updateUi(NVGcontext *vg, float w, float h)
     col = column(0);
     uiSetLayout(col, UI_TOP|UI_HFILL);
 
-    button(col, 1, BND_ICONID(6,3), "Item 1", demohandler);
-    button(col, 2, BND_ICONID(6,3), "Item 2", demohandler);
+    button(col, __LINE__, BND_ICONID(6,3), "Item 1", demohandler);
+    button(col, __LINE__, BND_ICONID(6,3), "Item 2", demohandler);
 
     {
         int h = hgroup(col);
-        radio(h, 3, BND_ICONID(6,3), "Item 3.0", &enum1);
-        radio(h, 4, BND_ICONID(0,10), NULL, &enum1);
-        radio(h, 5, BND_ICONID(1,10), NULL, &enum1);
-        radio(h, 6, BND_ICONID(6,3), "Item 3.3", &enum1);
+        radio(h, __LINE__, BND_ICONID(6,3), "Item 3.0", &enum1);
+        radio(h, __LINE__, BND_ICONID(0,10), NULL, &enum1);
+        radio(h, __LINE__, BND_ICONID(1,10), NULL, &enum1);
+        radio(h, __LINE__, BND_ICONID(6,3), "Item 3.3", &enum1);
     }
 
     {
@@ -464,30 +464,21 @@ void updateUi(NVGcontext *vg, float w, float h)
         int coll = vgroup(rows);
         label(coll, -1, "Items 4.0:");
         coll = vgroup(coll);
-        button(coll, 7, BND_ICONID(6,3), "Item 4.0.0", demohandler);
-        button(coll, 8, BND_ICONID(6,3), "Item 4.0.1", demohandler);
+        button(coll, __LINE__, BND_ICONID(6,3), "Item 4.0.0", demohandler);
+        button(coll, __LINE__, BND_ICONID(6,3), "Item 4.0.1", demohandler);
         colr = vgroup(rows);
         uiSetFrozen(colr, option1);
         label(colr, -1, "Items 4.1:");
         colr = vgroup(colr);
-        slider(colr, 9, "Item 4.1.0", &progress1);
-        slider(colr,10, "Item 4.1.1", &progress2);
+        slider(colr, __LINE__, "Item 4.1.0", &progress1);
+        slider(colr,__LINE__, "Item 4.1.1", &progress2);
     }
 
-    button(col, 11, BND_ICONID(6,3), "Item 5", NULL);
+    button(col, __LINE__, BND_ICONID(6,3), "Item 5", NULL);
 
-    check(col, 12, "Frozen", &option1);
-    check(col, 13, "Item 7", &option2);
-    check(col, 14, "Item 8", &option3);
-
-    uiProcess();
-}
-
-static void mousebutton(GLFWwindow *window, int button, int action, int mods)
-{
-    NVG_NOTUSED(window);
-    NVG_NOTUSED(mods);
-    uiSetButton(button, (action==GLFW_PRESS)?1:0);
+    check(col, __LINE__, "Frozen", &option1);
+    check(col, __LINE__, "Item 7", &option2);
+    check(col, __LINE__, "Item 8", &option3);
 }
 
 UIcontext *uictx;
@@ -499,8 +490,6 @@ void setup()
     uictx = uiCreateContext();
     uiMakeCurrent(uictx);
 
-    glfwSetMouseButtonCallback(window, mousebutton);
-
     bndSetFont(nvgCreateFont(vg, "system", "../3rdparty/blendish/DejaVuSans.ttf"));
     bndSetIconImage(nvgCreateImage(vg, "../3rdparty/blendish/blender_icons16.png", NVG_IMAGE_GENERATE_MIPMAPS));
 }
@@ -509,13 +498,17 @@ void draw()
 {
     unsigned char mbut = 0;
     int scrollarea1 = 0;
+    int i;
 
     background(gray(122));
 
     uiSetCursor((int)mouseX,(int)mouseY);
+    for (i=0; i<3; i++) uiSetButton(i, 0);
+    if (mousePressed) uiSetButton(mouseButton, 1);
 
-    updateUi(vg, width, height);
-    drawUiBlendish(vg, 0, 0, 0);
+    createUi(vg, width, height);
+    uiProcess();
+    drawBlendishUi(vg, 0, 0, 0);
 
     if (key == GLFW_KEY_ESCAPE)
     {
