@@ -29,9 +29,12 @@ THE SOFTWARE.
 #error "nanovg.h must be included first."
 #endif
 
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 /*
 
@@ -467,6 +470,11 @@ void bndUpDownArrow(NVGcontext *ctx, float x, float y, float s, NVGcolor color);
 
 #include <memory.h>
 #include <math.h>
+
+#ifndef fminf
+#define fminf(a,b)   ((a) < (b) ? (a) : (b))
+#define fmaxf(a,b)   ((a) > (b) ? (a) : (b))
+#endif
 
 #ifdef _MSC_VER
 	#pragma warning (disable: 4996) // Switch off security warnings
@@ -1278,11 +1286,11 @@ void bndUpDownArrow(NVGcontext *ctx, float x, float y, float s, NVGcolor color) 
     nvgBeginPath(ctx);
     w = 1.1f*s;
     nvgMoveTo(ctx,x,y-1);
-    nvgLineTo(ctx,x+0.5*w,y-s-1);
+    nvgLineTo(ctx,x+0.5f*w,y-s-1);
     nvgLineTo(ctx,x+w,y-1);
     nvgClosePath(ctx);
     nvgMoveTo(ctx,x,y+1);
-    nvgLineTo(ctx,x+0.5*w,y+s+1);
+    nvgLineTo(ctx,x+0.5f*w,y+s+1);
     nvgLineTo(ctx,x+w,y+1);
     nvgClosePath(ctx);
     nvgFillColor(ctx,color);

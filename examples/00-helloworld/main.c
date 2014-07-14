@@ -61,7 +61,6 @@ int main()
         int winWidth, winHeight;
         int fbWidth, fbHeight;
         float pxRatio;
-        int i;
 
         glfwGetCursorPos(window, &mx, &my);
         glfwGetWindowSize(window, &winWidth, &winHeight);

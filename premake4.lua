@@ -117,6 +117,13 @@ solution "island"
             "3rdparty/AntTweakBar/src/*",
         }
 
+    project "blendish"
+        language "C++"
+        files { 
+            "3rdparty/blendish/*.h",
+            "3rdparty/blendish/blendish_lib.cpp" 
+        }
+
     function create_example_project( example_path )
         example_path = string.sub(example_path, string.len("examples/") + 1);
         project (example_path)
@@ -124,7 +131,7 @@ solution "island"
             files { "examples/" .. example_path .. "/*" }
             defines { 
                 "GLEW_STATIC",
-                "NANOVG_GL3_IMPLEMENTATION"
+                "NANOVG_GL3_IMPLEMENTATION",
             }
             includedirs { 
                 "3rdparty",
@@ -136,6 +143,7 @@ solution "island"
                 "3rdparty/stb",
                 "3rdparty/imgui",
                 "3rdparty/AntTweakBar/include",
+                "3rdparty/blendish",
             }
 
             libdirs {
@@ -152,6 +160,7 @@ solution "island"
                     "stb-d",
                     "imgui-d",
                     "AntTweakBar-d",
+                    "blendish-d",
                 }
 
             configuration "Release"
@@ -164,6 +173,7 @@ solution "island"
                     "stb",
                     "imgui",
                     "AntTweakBar",
+                    "blendish",
                 }
 
             configuration "windows"

@@ -12,6 +12,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4244)  // conversion from 'float' to 'int', possible loss of data
+#pragma warning(disable: 4305)  // 'initializing' : truncation from 'double' to 'float'
 #endif
 
 extern GLFWwindow* window;
