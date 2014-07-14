@@ -271,7 +271,6 @@ void sliderhandler(int item, UIevent event)
     // retrieve the custom data we saved with the slider
     UISliderData *data = (UISliderData *)uiGetData(item);
     switch(event) {
-        default: break;
         case UI_BUTTON0_DOWN: 
             {
                 // button was pressed for the first time; capture initial
@@ -292,6 +291,7 @@ void sliderhandler(int item, UIevent event)
                 // assign the new value
                 *data->progress = value;                                 
             } break;
+        default: break;
     }
 }
 
@@ -305,8 +305,7 @@ int slider(int parent, UIhandle handle, const char *label, float *progress)
     // set size of wiget; horizontal size is dynamic, vertical is fixed
     uiSetSize(item, 0, BND_WIDGET_HEIGHT);
     // attach our slider event handler and capture two classes of events
-    uiSetHandler(item, sliderhandler, 
-        UI_BUTTON0_DOWN | UI_BUTTON0_CAPTURE);
+    uiSetHandler(item, sliderhandler, UI_BUTTON0_DOWN | UI_BUTTON0_CAPTURE);
     {
         // store some custom data with the button that we use for styling
         // and logic, e.g. the pointer to the data we want to alter.
@@ -424,20 +423,16 @@ int row(int parent)
     return item;
 }
 
+static int enum1 = 0;
+static float progress1 = 0.25f;
+static float progress2 = 0.75f;
+static int option1 = 1;
+static int option2 = 0;
+static int option3 = 0;
+
 void updateUi(NVGcontext *vg, float w, float h)
 {
     int col;
-
-    // some persistent variables for demonstration
-    static int enum1 = 0;
-    static float progress1 = 0.25f;
-    static float progress2 = 0.75f;
-    static int option1 = 1;
-    static int option2 = 0;
-    static int option3 = 0;
-
-    int x = 10;
-    int y = 10;
 
     uiClear();
 
@@ -448,7 +443,6 @@ void updateUi(NVGcontext *vg, float w, float h)
         uiSetMargins(root,50,50,0,0);
         uiSetSize(root,250,400);
     }
-
 
     col = column(0);
     uiSetLayout(col, UI_TOP|UI_HFILL);
@@ -523,16 +517,13 @@ void draw()
     updateUi(vg, width, height);
     drawUiBlendish(vg, 0, 0, 0);
 
-    if (keyPressed)
+    if (key == GLFW_KEY_ESCAPE)
     {
-        if (key == GLFW_KEY_ESCAPE)
-        {
-            quit();
-        }
-        else if (key == GLFW_KEY_SPACE)
-        {
-            saveFrame("screenshot.png");
-        }
+        quit();
+    }
+    else if (key == GLFW_KEY_SPACE)
+    {
+        saveFrame("screenshot.png");
     }
 }
 

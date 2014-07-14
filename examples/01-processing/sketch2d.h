@@ -600,12 +600,14 @@ int main()
 
         // keyboard event
         keyPressed = 0;
+        key = GLFW_KEY_UNKNOWN;
         for (i=0; i<GLFW_KEY_LAST; i++)
         {
             if (glfwGetKey(window, i) == GLFW_PRESS)
             {
                 keyPressed = 1;
                 key = i;
+                break;
             }
         }
 
