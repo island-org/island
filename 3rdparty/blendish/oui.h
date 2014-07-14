@@ -25,6 +25,10 @@ THE SOFTWARE.
 #ifndef _OUI_H_
 #define _OUI_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 Revision 2 (2014-07-13)
 
@@ -505,6 +509,10 @@ int uiGetRelToRight(int item);
 // return the items anchored sibling as assigned with uiSetRelToBottom() 
 // or -1 if not set.
 int uiGetRelToDown(int item);
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif // _OUI_H_
 

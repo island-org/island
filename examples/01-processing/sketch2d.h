@@ -263,7 +263,7 @@ void size(int winWidth, int winHeight)
         glGetError();
     }
 
-    vg = nvgCreateGL3(NVG_STENCIL_STROKES);
+    vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
     if (vg == NULL)
     {
         printf("Could not init nanovg.\n");
