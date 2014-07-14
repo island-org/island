@@ -213,7 +213,7 @@ void drawBlendish(NVGcontext *vg, float w, float h)
 
 void setup()
 {
-    size(800, 600);
+    size(640, 320);
 
     bndSetFont(nvgCreateFont(vg, "system", "../3rdparty/blendish/DejaVuSans.ttf"));
     bndSetIconImage(nvgCreateImage(vg, "../3rdparty/blendish/blender_icons16.png", NVG_IMAGE_GENERATE_MIPMAPS));
