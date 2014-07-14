@@ -65,6 +65,8 @@ void draw()
 
     time = millis() * 0.001;
     TwDraw();
+
+    if (keyPressed && key == GLFW_KEY_SPACE) saveFrame("screenshot.png");
 }
 
 void shutdown()

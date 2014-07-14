@@ -128,7 +128,11 @@ solution "island"
         example_path = string.sub(example_path, string.len("examples/") + 1);
         project (example_path)
             kind "ConsoleApp"
-            files { "examples/" .. example_path .. "/*" }
+            files { 
+                "examples/" .. example_path .. "/*.h",
+                "examples/" .. example_path .. "/*.lua",
+                "examples/" .. example_path .. "/*.c",
+            }
             defines { 
                 "GLEW_STATIC",
                 "NANOVG_GL3_IMPLEMENTATION",

@@ -55,7 +55,7 @@ typedef struct
     GLuint tex; // OpenGL texture id
     int width;
     int height;
-}PImage;
+} PImage;
 
 // Supports jpg, png, psd, tga, pic and gif
 PImage loadImage(const char* filename);
@@ -72,7 +72,7 @@ void saveFrame(const char* filename);
 typedef struct
 {
     int id;
-}PFont;
+} PFont;
 
 PFont loadFont(const char* filename);
 void textFont(PFont font);
