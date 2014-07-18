@@ -99,12 +99,6 @@ solution "island"
             "3rdparty/stb/*.c" 
         }
 
-    project "imgui"
-        files { 
-            "3rdparty/imgui/imgui.h",
-            "3rdparty/imgui/imgui.c" 
-        }
-
     project "AntTweakBar"
         language "C++"
         includedirs { 
@@ -145,13 +139,13 @@ solution "island"
                 "3rdparty/libuv/src",
                 "3rdparty/lua/src",
                 "3rdparty/stb",
-                "3rdparty/imgui",
                 "3rdparty/AntTweakBar/include",
                 "3rdparty/blendish",
+                "3rdparty/bass/include",
             }
 
             libdirs {
-                "bin"
+                "bin",
             }
 
             configuration "Debug"
@@ -162,7 +156,6 @@ solution "island"
                     "libuv-d",
                     "lua-d",
                     "stb-d",
-                    "imgui-d",
                     "AntTweakBar-d",
                     "blendish-d",
                 }
@@ -175,14 +168,14 @@ solution "island"
                     "libuv",
                     "lua",
                     "stb",
-                    "imgui",
                     "AntTweakBar",
                     "blendish",
                 }
 
             configuration "windows"
                 links {
-                    "OpenGL32"
+                    "OpenGL32",
+                    "3rdparty/bass/lib/windows/bass.lib",
                 }
     end
 
