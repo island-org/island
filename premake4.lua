@@ -146,6 +146,7 @@ solution "island"
 
             libdirs {
                 "bin",
+                "3rdparty/bass/lib/windows",
             }
 
             configuration "Debug"
@@ -175,7 +176,7 @@ solution "island"
             configuration "windows"
                 links {
                     "OpenGL32",
-                    "3rdparty/bass/lib/windows/bass.lib",
+                    "bass",
                 }
     end
 
