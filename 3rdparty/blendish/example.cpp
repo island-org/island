@@ -36,6 +36,10 @@ typedef enum {
     ST_ROW = 5,
     // check button
     ST_CHECK = 6,
+    // panel
+    ST_PANEL = 7,
+    // text
+    ST_TEXT = 8,
 } SubType;
 
 typedef struct {
@@ -66,6 +70,12 @@ typedef struct {
     const char *label;
     float *progress;
 } UISliderData;
+
+typedef struct {
+    UIData head;
+    char *text;
+    int maxsize;
+} UITextData;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -117,12 +127,15 @@ void drawUI(NVGcontext *vg, int item, int x, int y) {
     rect.x += x;
     rect.y += y; 
     if (uiGetState(item) == UI_FROZEN) {
-        nvgGlobalAlpha(vg, 0.5);
+        nvgGlobalAlpha(vg, BND_DISABLED_ALPHA);
     }
     if (head) {
         switch(head->subtype) {
             default: {
                 testrect(vg,rect);
+            } break;
+            case ST_PANEL: {
+                bndBevel(vg,rect.x,rect.y,rect.w,rect.h);
             } break;
             case ST_LABEL: {
                 assert(head);
@@ -161,6 +174,13 @@ void drawUI(NVGcontext *vg, int item, int x, int y) {
                 bndSlider(vg,rect.x,rect.y,rect.w,rect.h,
                     cornerFlags(item),state,
                     *data->progress,data->label,value);
+            } break;
+            case ST_TEXT: {
+                const UITextData *data = (UITextData*)head;
+                BNDwidgetState state = (BNDwidgetState)uiGetState(item);
+                int idx = strlen(data->text);
+                bndTextField(vg,rect.x,rect.y,rect.w,rect.h,
+                    cornerFlags(item),state, -1, data->text, idx, idx);
             } break;
         }
     } else {
@@ -290,6 +310,53 @@ int slider(int parent, UIhandle handle, const char *label, float *progress) {
     return item;
 }
 
+void textboxhandler(int item, UIevent event) {
+    UITextData *data = (UITextData *)uiGetData(item);
+    switch(event) {
+        default: break;
+        case UI_BUTTON0_DOWN: {
+            uiFocus(item);
+        } break;
+        case UI_KEY_DOWN: {
+            unsigned int key = uiGetKey();
+            switch(key) {
+                default: break;
+                case GLFW_KEY_BACKSPACE: {
+                    int size = strlen(data->text);
+                    if (!size) return;
+                    data->text[size-1] = 0;
+                } break;
+                case GLFW_KEY_ENTER: {
+                    uiFocus(-1);
+                } break;
+            }
+        } break;
+        case UI_CHAR: {
+            unsigned int key = uiGetKey();
+            if ((key > 255)||(key < 32)) return;
+            int size = strlen(data->text);
+            if (size >= (data->maxsize-1)) return;
+            data->text[size] = (char)key;
+        } break;
+    }
+}
+
+int textbox(int parent, UIhandle handle, char *text, int maxsize) {
+    int item = uiItem();
+    uiSetHandle(item, handle);
+    uiSetSize(item, 0, BND_WIDGET_HEIGHT);
+    uiSetHandler(item, textboxhandler, 
+        UI_BUTTON0_DOWN | UI_KEY_DOWN | UI_CHAR);
+    // store some custom data with the button that we use for styling
+    // and logic, e.g. the pointer to the data we want to alter.
+    UITextData *data = (UITextData *)uiAllocData(item, sizeof(UITextData));
+    data->head.subtype = ST_TEXT;
+    data->text = text;
+    data->maxsize = maxsize;
+    uiAppend(parent, item);
+    return item;
+}
+
 // simple logic for a radio button
 void radiohandler(int item, UIevent event) {
     UIRadioData *data = (UIRadioData *)uiGetData(item);
@@ -319,6 +386,13 @@ void columnhandler(int parent, UIevent event) {
     uiSetLayout(item, UI_HFILL|UI_TOP);
     // if not the first item, add a margin of 1
     uiSetMargins(item, 0, (last < 0)?0:1, 0, 0);
+}
+
+int panel() {
+    int item = uiItem();
+    UIData *data = (UIData *)uiAllocData(item, sizeof(UIData));
+    data->subtype = ST_PANEL;
+    return item;
 }
 
 int column(int parent) {
@@ -384,8 +458,35 @@ int row(int parent) {
     return item;
 }
 
+void draw_noodles(NVGcontext *vg, int x, int y) {
+    int w = 200;
+    int s = 70;
+
+    bndNodeBackground(vg, x+w, y-50, 100, 200, BND_DEFAULT, BND_ICONID(6,3),
+        "Default", nvgRGBf(0.392f,0.392f,0.392f));
+    bndNodeBackground(vg, x+w+120, y-50, 100, 200, BND_HOVER, BND_ICONID(6,3),
+        "Hover", nvgRGBf(0.392f,0.392f,0.392f));
+    bndNodeBackground(vg, x+w+240, y-50, 100, 200, BND_ACTIVE, BND_ICONID(6,3),
+        "Active", nvgRGBf(0.392f,0.392f,0.392f));
+    
+    for (int i = 0; i < 9; ++i) {
+        int a = i%3;
+        int b = i/3;
+        bndNodeWire(vg, x, y+s*a, x+w, y+s*b, (BNDwidgetState)a, (BNDwidgetState)b);
+    }
+    
+    bndNodePort(vg, x, y, BND_DEFAULT, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x+w, y, BND_DEFAULT, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x, y+s, BND_HOVER, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x+w, y+s, BND_HOVER, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x, y+2*s, BND_ACTIVE, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x+w, y+2*s, BND_ACTIVE, nvgRGBf(0.5f, 0.5f, 0.5f));
+}
+
 void draw(NVGcontext *vg, float w, float h) {
     bndBackground(vg, 0, 0, w, h);
+    
+    bndSplitterWidgets(vg, 0, 0, w, h);
     
     int x = 10;
     int y = 10;
@@ -522,6 +623,8 @@ void draw(NVGcontext *vg, float w, float h) {
     ry += 25;
     bndTextField(vg,rx,ry,240,BND_WIDGET_HEIGHT,BND_CORNER_NONE,BND_ACTIVE,
         -1, edit_text, idx1, idx2);
+        
+    draw_noodles(vg, 20, ry+50);
     
     rx += rw + 20;
     ry = 10;
@@ -582,13 +685,14 @@ void draw(NVGcontext *vg, float w, float h) {
     
     uiClear();
     
-    int root = uiItem(); 
+    int root = panel();
     // position root element
     uiSetLayout(0,UI_LEFT|UI_TOP);
     uiSetMargins(0,600,10,0,0);
     uiSetSize(0,250,400);
     
-    int col = column(0);
+    int col = column(root);
+    uiSetMargins(col, 10, 10, 10, 10);
     uiSetLayout(col, UI_TOP|UI_HFILL);
     
     button(col, 1, BND_ICONID(6,3), "Item 1", demohandler);
@@ -623,10 +727,23 @@ void draw(NVGcontext *vg, float w, float h) {
     check(col, 13, "Item 7", &option2);
     check(col, 14, "Item 8", &option3);
     
-    uiProcess();
+    static char textbuffer[32] = "click and edit";
     
+    textbox(col, (UIhandle)textbuffer, textbuffer, 32);
     
+    uiLayout();
     drawUI(vg, 0, 0, 0);
+    
+    UIvec2 cursor = uiGetCursor();
+    cursor.x -= w/2;
+    cursor.y -= h/2;
+    if (abs(cursor.x) > (w/4)) {
+        bndJoinAreaOverlay(vg, 0, 0, w, h, 0, (cursor.x > 0));
+    } else if (abs(cursor.y) > (h/4)) {
+        bndJoinAreaOverlay(vg, 0, 0, w, h, 1, (cursor.y > 0));
+    }
+    
+    uiProcess();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -647,12 +764,18 @@ static void cursorpos(GLFWwindow *window, double x, double y) {
     uiSetCursor((int)x,(int)y);
 }
 
+static void charevent(GLFWwindow *window, unsigned int value) {
+	NVG_NOTUSED(window);
+    uiSetChar(value);
+}
+
 static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	NVG_NOTUSED(scancode);
 	NVG_NOTUSED(mods);
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
+    uiSetKey(key, mods, action);
 }
 
 int main()
@@ -685,8 +808,9 @@ int main()
 	}
 
 	glfwSetKeyCallback(window, key);
+    glfwSetCharCallback(window, charevent);
     glfwSetCursorPosCallback(window, cursorpos);
-    glfwSetMouseButtonCallback(window, mousebutton);
+    glfwSetMouseButtonCallback(window, mousebutton);    
 
 	glfwMakeContextCurrent(window);
 #ifdef NANOVG_GLEW

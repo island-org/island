@@ -22,3 +22,6 @@
 [submodule "3rdparty/libhl"]
 	path = 3rdparty/libhl
 	url = https://github.com/xant/libhl.git
+[submodule "3rdparty/soloud"]
+	path = 3rdparty/soloud
+	url = https://github.com/jarikomppa/soloud.git

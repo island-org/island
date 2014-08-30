@@ -25,10 +25,6 @@ THE SOFTWARE.
 #ifndef _OUI_H_
 #define _OUI_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 Revision 2 (2014-07-13)
 
@@ -69,12 +65,15 @@ void app_main(...) {
         
         // - UI setup code goes here -
         app_setup_ui();
-        
-        // layout UI, update states and fire handlers
-        uiProcess();
-        
+
+        // layout UI
+        uiLayout();
+
         // draw UI
         app_draw_ui(render_context,0,0,0);
+        
+        // update states and fire handlers
+        uiProcess();
     }
 
     uiDestroyContext(context);
@@ -185,7 +184,7 @@ See example.cpp in the repository for a full usage example.
 
 // limits
 
-// maximum number of items that may be added
+// maximum number of items that may be added (must be power of 2)
 #define UI_MAX_ITEMS 4096
 // maximum size in bytes reserved for storage of application dependent data
 // as passed to uiAllocData().
@@ -194,6 +193,8 @@ See example.cpp in the repository for a full usage example.
 #define UI_MAX_DATASIZE 4096
 // maximum depth of nested containers
 #define UI_MAX_DEPTH 64
+// maximum number of buffered input events
+#define UI_MAX_INPUT_EVENTS 64
 
 typedef unsigned int UIuint;
 
@@ -210,10 +211,10 @@ typedef enum UIitemState {
     UI_COLD = 0,
     // the item is inactive, but the cursor is hovering over this item
     UI_HOT = 1,
-    // the item is toggled or activated (depends on item kind)
+    // the item is toggled, activated, focused (depends on item kind)
     UI_ACTIVE = 2,
     // the item is unresponsive
-    UI_FROZEN = 3
+    UI_FROZEN = 3,
 } UIitemState;
 
 // layout flags
@@ -243,24 +244,39 @@ typedef enum UIlayoutFlags {
 // event flags
 typedef enum UIevent {
     // on button 0 down
-    UI_BUTTON0_DOWN = 0x01,
+    UI_BUTTON0_DOWN = 0x0001,
     // on button 0 up
     // when this event has a handler, uiGetState() will return UI_ACTIVE as
     // long as button 0 is down.
-    UI_BUTTON0_UP = 0x02,
+    UI_BUTTON0_UP = 0x0002,
     // on button 0 up while item is hovered
     // when this event has a handler, uiGetState() will return UI_ACTIVE
     // when the cursor is hovering the items rectangle; this is the
     // behavior expected for buttons.
-    UI_BUTTON0_HOT_UP = 0x04,
+    UI_BUTTON0_HOT_UP = 0x0004,
     // item is being captured (button 0 constantly pressed); 
     // when this event has a handler, uiGetState() will return UI_ACTIVE as
     // long as button 0 is down.
-    UI_BUTTON0_CAPTURE = 0x08,
+    UI_BUTTON0_CAPTURE = 0x0008,
+    // on button 2 down (right mouse button, usually triggers context menu)
+    UI_BUTTON2_DOWN = 0x0010,
     // item has received a new child
     // this can be used to allow container items to configure child items
     // as they appear.
-    UI_APPEND = 0x10,
+    UI_APPEND = 0x0100,
+    // item is focused and has received a key-down event
+    // the respective key can be queried using uiGetKey() and uiGetModifier()
+    UI_KEY_DOWN = 0x0200,
+    // item is focused and has received a key-up event
+    // the respective key can be queried using uiGetKey() and uiGetModifier()
+    UI_KEY_UP = 0x0400,
+    // item is focused and has received a character event
+    // the respective character can be queried using uiGetKey()
+    UI_CHAR = 0x0800,
+    // item is requested to fill a container with additional items,
+    // usually menuitems for a context menu.
+    // the respective container can be queried using uiGetExtendItem()
+    UI_EXTEND = 0x1000,
 } UIevent;
 
 // handler callback; event is one of UI_EVENT_*
@@ -332,6 +348,18 @@ void uiSetButton(int button, int enabled);
 // the function returns 1 if the button has been set to pressed, 0 for released.
 int uiGetButton(int button);
 
+// sets a key as down/up; the key can be any application defined keycode
+// mod is an application defined set of flags for modifier keys
+// enabled is 1 for key down, 0 for key up
+// all key events are being buffered until the next call to uiProcess()
+void uiSetKey(unsigned int key, unsigned int mod, int enabled);
+
+// sends a single character for text input; the character is usually in the
+// unicode range, but can be application defined.
+// all char events are being buffered until the next call to uiProcess()
+void uiSetChar(unsigned int value);
+
+
 // Stages
 // ------
 
@@ -342,12 +370,18 @@ int uiGetButton(int button);
 // application dependent context data has been freed.
 void uiClear();
 
-// layout all added items starting from the root item 0, update the
-// internal state according to the current cursor position and button states,
-// and call all registered handlers.
+// layout all added items starting from the root item 0.
+// after calling uiLayout(), no further modifications to the item tree should
+// be done until the next call to uiClear().
+// It is safe to immediately draw the items after a call to uiLayout().
+// this is an O(N) operation for N = number of declared items.
+void uiLayout();
+
+// update the internal state according to the current cursor position and 
+// button states, and call all registered handlers.
 // after calling uiProcess(), no further modifications to the item tree should
 // be done until the next call to uiClear().
-// It is safe to immediately draw the items after a call to uiProcess().
+// Items should be drawn before a call to uiProcess()
 // this is an O(N) operation for N = number of declared items.
 void uiProcess();
 
@@ -370,6 +404,10 @@ void uiSetFrozen(int item, int enable);
 // handle is an application defined 64-bit handle. If handle is 0, the item
 // will not be interactive.
 void uiSetHandle(int item, UIhandle handle);
+
+// assigns the items own address as handle; this may cause glitches
+// when the order of items changes while theitem is captured
+void uiSetSelfHandle(int item);
 
 // allocate space for application-dependent context data and return the pointer
 // if successful. If no data has been allocated, a new pointer is returned. 
@@ -413,6 +451,10 @@ void uiSetRelToRight(int item, int other);
 // sibling is below this item.
 void uiSetRelToDown(int item, int other);
 
+// set item as recipient of all keyboard events; the item must have a handle
+// assigned; if item is -1, no item will be focused.
+void uiFocus(int item);
+
 // Iteration
 // ---------
 
@@ -449,15 +491,31 @@ UIitemState uiGetState(int item);
 // return the application-dependent handle of the item as passed to uiSetHandle().
 UIhandle uiGetHandle(int item);
 
+// return the item with the given application-dependent handle as assigned by
+// uiSetHandle() or -1 if unsuccessful.
+int uiGetItem(UIhandle handle);
+
+// return the item that is currently under the cursor or -1 for none
+int uiGetHotItem();
+
+// return the item that is currently focused or -1 for none
+int uiGetFocusedItem();
+
 // return the application-dependent context data for an item as passed to
 // uiAllocData(). The memory of the pointer is managed by the UI context
-// and must not be altered.
+// and should not be altered.
 const void *uiGetData(int item);
 
 // return the handler callback for an item as passed to uiSetHandler()
 UIhandler uiGetHandler(int item);
 // return the handler flags for an item as passed to uiSetHandler()
 int uiGetHandlerFlags(int item);
+// when handling a KEY_DOWN/KEY_UP event: the key that triggered this event
+unsigned int uiGetKey();
+// when handling a KEY_DOWN/KEY_UP event: the key that triggered this event
+unsigned int uiGetModifier();
+// when handling an EXTEND event; the container which to add items to
+int uiGetExtendItem();
 
 // returns the number of child items a container item contains. If the item 
 // is not a container or does not contain any items, 0 is returned.
@@ -471,9 +529,19 @@ int uiGetChildCount(int item);
 int uiGetChildId(int item);
 
 // returns the items layout rectangle relative to the parent. If uiGetRect()
-// is called before uiProcess(), the values of the returned rectangle are
+// is called before uiLayout(), the values of the returned rectangle are
 // undefined.
 UIrect uiGetRect(int item);
+
+// returns the items layout rectangle in absolute coordinates. If 
+// uiGetAbsoluteRect() is called before uiLayout(), the values of the returned
+// rectangle are undefined.
+// This function has complexity O(N) for N parents
+UIrect uiGetAbsoluteRect(int item);
+
+// returns 1 if an items absolute rectangle contains a given coordinate
+// otherwise 0
+int uiContains(int item, int x, int y);
 
 // when called from an input event handler, returns the active items absolute
 // layout rectangle. If uiGetActiveRect() is called outside of a handler,
@@ -510,10 +578,6 @@ int uiGetRelToRight(int item);
 // or -1 if not set.
 int uiGetRelToDown(int item);
 
-#ifdef __cplusplus
-};
-#endif
-
 #endif // _OUI_H_
 
 #ifdef OUI_IMPLEMENTATION
@@ -533,6 +597,15 @@ int uiGetRelToDown(int item);
 #endif
 
 #define UI_MAX_KIND 16
+
+#define UI_ANY_INPUT (UI_BUTTON0_DOWN \
+    |UI_BUTTON0_UP \
+    |UI_BUTTON0_HOT_UP \
+    |UI_BUTTON0_CAPTURE \
+    |UI_BUTTON2_DOWN \
+    |UI_KEY_DOWN \
+    |UI_KEY_UP \
+    |UI_CHAR)
 
 typedef struct UIitem {
     // declaration independent unique handle (for persistence)
@@ -592,6 +665,17 @@ typedef enum UIstate {
     UI_STATE_CAPTURE,
 } UIstate;
 
+typedef struct UIhandleEntry {
+    unsigned int key;
+    int item;
+} UIhandleEntry;
+
+typedef struct UIinputEvent {
+    unsigned int key;
+    unsigned int mod;
+    UIevent event;
+} UIinputEvent;
+
 struct UIcontext {
     // button state in this frame
     unsigned long long buttons;
@@ -607,16 +691,23 @@ struct UIcontext {
     
     UIhandle hot_handle;
     UIhandle active_handle;
-    int hot_item;
-    int active_item;
+    UIhandle focus_handle;
     UIrect hot_rect;
     UIrect active_rect;
     UIstate state;
+    int hot_item;
+    unsigned int active_key;
+    unsigned int active_modifier;
+    int extend_item;
     
     int count;    
-    UIitem items[UI_MAX_ITEMS];
     int datasize;
+    int eventcount;
+    
+    UIitem items[UI_MAX_ITEMS];    
     unsigned char data[UI_MAX_BUFFERSIZE];
+    UIhandleEntry handles[UI_MAX_ITEMS];    
+    UIinputEvent events[UI_MAX_INPUT_EVENTS];
 };
 
 UI_INLINE int ui_max(int a, int b) {
@@ -647,6 +738,80 @@ void uiDestroyContext(UIcontext *ctx) {
     free(ctx);
 }
 
+UI_INLINE unsigned int uiHashHandle(UIhandle handle) {
+    handle = (handle+(handle>>32)) & 0xffffffff;
+    unsigned int x = (unsigned int)handle;
+    x += (x>>6)+(x>>19);
+    x += x<<16;
+    x ^= x<<3;
+    x += x>>5;
+    x ^= x<<2;
+    x += x>>15;
+    x ^= x<<10;
+    return x?x:1; // must not be zero
+}
+
+UI_INLINE unsigned int uiHashProbeDistance(unsigned int key, unsigned int slot_index) {
+    unsigned int pos = key & (UI_MAX_ITEMS-1);
+    return (slot_index + UI_MAX_ITEMS - pos) & (UI_MAX_ITEMS-1);
+}
+
+UI_INLINE UIhandleEntry *uiHashLookupHandle(unsigned int key) {
+    assert(ui_context);
+    int pos = key & (UI_MAX_ITEMS-1);
+    unsigned int dist = 0;
+    for (;;) {
+        UIhandleEntry *entry = ui_context->handles + pos;
+        unsigned int pos_key = entry->key;
+        if (!pos_key) return NULL;
+        else if (entry->key == key)
+            return entry;
+        else if (dist > uiHashProbeDistance(pos_key, pos))
+            return NULL;
+        pos = (pos+1) & (UI_MAX_ITEMS-1);
+        ++dist;
+    }
+}
+
+int uiGetItem(UIhandle handle) {
+    unsigned int key = uiHashHandle(handle);
+    UIhandleEntry *e = uiHashLookupHandle(key);
+    return e?(e->item):-1;
+}
+
+static void uiHashInsertHandle(UIhandle handle, int item) {
+    unsigned int key = uiHashHandle(handle);
+    UIhandleEntry *e = uiHashLookupHandle(key);
+    if (e) { // update
+        e->item = item;
+        return;
+    }
+
+    int pos = key & (UI_MAX_ITEMS-1);
+    unsigned int dist = 0;
+    for (unsigned int i = 0; i < UI_MAX_ITEMS; ++i) {
+        int index = (pos + i) & (UI_MAX_ITEMS-1);
+        unsigned int pos_key = ui_context->handles[index].key;
+        if (!pos_key) {
+            ui_context->handles[index].key = key;
+            ui_context->handles[index].item = item;
+            break;
+        } else {
+            unsigned int probe_distance = uiHashProbeDistance(pos_key, index);
+            if (dist > probe_distance) {
+                unsigned int oldkey = ui_context->handles[index].key;
+                unsigned int olditem = ui_context->handles[index].item;                
+                ui_context->handles[index].key = key;
+                ui_context->handles[index].item = item;
+                key = oldkey;
+                item = olditem;
+                dist = probe_distance;
+            }
+        }
+        ++dist;
+    }
+}
+
 void uiSetButton(int button, int enabled) {
     assert(ui_context);
     unsigned long long mask = 1ull<<button;
@@ -654,6 +819,29 @@ void uiSetButton(int button, int enabled) {
     ui_context->buttons = (enabled)?
         (ui_context->buttons | mask):
         (ui_context->buttons & ~mask);
+}
+
+static void uiAddInputEvent(UIinputEvent event) {
+    assert(ui_context);
+    if (ui_context->eventcount == UI_MAX_INPUT_EVENTS) return;
+    ui_context->events[ui_context->eventcount++] = event;
+}
+
+static void uiClearInputEvents() {
+    assert(ui_context);
+    ui_context->eventcount = 0;
+}
+
+void uiSetKey(unsigned int key, unsigned int mod, int enabled) {
+    assert(ui_context);
+    UIinputEvent event = { key, mod, enabled?UI_KEY_DOWN:UI_KEY_UP };
+    uiAddInputEvent(event);
+}
+
+void uiSetChar(unsigned int value) {
+    assert(ui_context);
+    UIinputEvent event = { value, 0, UI_CHAR };
+    uiAddInputEvent(event);
 }
 
 int uiGetLastButton(int button) {
@@ -710,9 +898,39 @@ UIvec2 uiGetCursorStartDelta() {
     return result;
 }
 
+unsigned int uiGetKey() {
+    assert(ui_context);
+    return ui_context->active_key;
+}
+
+unsigned int uiGetModifier() {
+    assert(ui_context);
+    return ui_context->active_modifier;
+}
+
+int uiGetExtendItem() {
+    assert(ui_context);
+    return ui_context->extend_item;
+}
+
 UIitem *uiItemPtr(int item) {
     assert(ui_context && (item >= 0) && (item < ui_context->count));
     return ui_context->items + item;
+}
+
+int uiGetHotItem() {
+    assert(ui_context);
+    return ui_context->hot_item;
+}
+
+void uiFocus(int item) {
+    assert(ui_context && (item >= -1) && (item < ui_context->count));
+    ui_context->focus_handle = (item < 0)?0:uiGetHandle(item);
+}
+
+int uiGetFocusedItem() {
+    assert(ui_context);
+    return ui_context->focus_handle?uiGetItem(ui_context->focus_handle):-1;
 }
 
 void uiClear() {
@@ -720,11 +938,12 @@ void uiClear() {
     ui_context->count = 0;
     ui_context->datasize = 0;
     ui_context->hot_item = -1;
-    ui_context->active_item = -1;
+    memset(ui_context->handles, 0, sizeof(ui_context->handles));
 }
 
 int uiItem() {
-    assert(ui_context && (ui_context->count < UI_MAX_ITEMS));
+    assert(ui_context);
+    assert(ui_context->count < UI_MAX_ITEMS);
     int idx = ui_context->count++;
     UIitem *item = uiItemPtr(idx);
     memset(item, 0, sizeof(UIitem));
@@ -744,6 +963,12 @@ void uiNotifyItem(int item, UIevent event) {
     if (pitem->handler && (pitem->event_flags & event)) {
         pitem->handler(item, event);
     }
+}
+
+void uiExtend(int parent, int from_item) {
+    assert(ui_context);
+    ui_context->extend_item = parent;
+    uiNotifyItem(from_item, UI_EXTEND);
 }
 
 int uiAppend(int item, int child) {
@@ -848,19 +1073,24 @@ int uiGetRelToDown(int item) {
 }
 
 
-UI_INLINE int uiComputeChainSize(UIitem *pkid, int dim) {
+UI_INLINE void uiComputeChainSize(UIitem *pkid, 
+    int *need_size, int *hard_size, int dim) {
     UIitem *pitem = pkid;
     int wdim = dim+2;
-    int size = pitem->rect.v[wdim];
+    int size = pitem->rect.v[wdim] + pitem->margins[dim] + pitem->margins[wdim];
+    *need_size = size;
+    *hard_size = pitem->size.v[dim]?size:0;
+    
     int it = 0;
     pitem->visited |= 1<<dim;
     // traverse along left neighbors
     while ((pitem->layout_flags>>dim) & UI_LEFT) {
-        size += pitem->margins[dim];
         if (pitem->relto[dim] < 0) break;
         pitem = uiItemPtr(pitem->relto[dim]);
         pitem->visited |= 1<<dim;
-        size += pitem->rect.v[wdim];
+        size = pitem->rect.v[wdim] + pitem->margins[dim] + pitem->margins[wdim];
+        *need_size = (*need_size) + size;
+        *hard_size = (*hard_size) + (pitem->size.v[dim]?size:0);
         it++;
         assert(it<1000000); // infinite loop
     }
@@ -868,112 +1098,122 @@ UI_INLINE int uiComputeChainSize(UIitem *pkid, int dim) {
     pitem = pkid;
     it = 0;
     while ((pitem->layout_flags>>dim) & UI_RIGHT) {
-        size += pitem->margins[wdim];
         if (pitem->relto[wdim] < 0) break;
         pitem = uiItemPtr(pitem->relto[wdim]);
         pitem->visited |= 1<<dim;
-        size += pitem->rect.v[wdim];
+        size = pitem->rect.v[wdim] + pitem->margins[dim] + pitem->margins[wdim];
+        *need_size = (*need_size) + size;
+        *hard_size = (*hard_size) + (pitem->size.v[dim]?size:0);
         it++;
         assert(it<1000000); // infinite loop
     }
-    return size;
 }
 
 UI_INLINE void uiComputeSizeDim(UIitem *pitem, int dim) {
     int wdim = dim+2;
+    int need_size = 0;
+    int hard_size = 0;
+    int kid = pitem->firstkid;
+    while (kid >= 0) {
+        UIitem *pkid = uiItemPtr(kid);
+        if (!(pkid->visited & (1<<dim))) {
+            int ns,hs;
+            uiComputeChainSize(pkid, &ns, &hs, dim);
+            need_size = ui_max(need_size, ns);
+            hard_size = ui_max(hard_size, hs);
+        }
+        kid = uiNextSibling(kid);
+    }
+    pitem->computed_size.v[dim] = hard_size;
+    
     if (pitem->size.v[dim]) {
         pitem->rect.v[wdim] = pitem->size.v[dim];
     } else {
-        int size = 0;
-        int kid = pitem->firstkid;
-        while (kid >= 0) {
-            UIitem *pkid = uiItemPtr(kid);
-            if (!(pkid->visited & (1<<dim))) {
-                size = ui_max(size, uiComputeChainSize(pkid, dim));
-            }
-            kid = uiNextSibling(kid);
-        }
-    
-        pitem->rect.v[wdim] = size;
-        pitem->computed_size.v[dim] = size;
+        pitem->rect.v[wdim] = need_size;
     }
 }
 
-static void uiComputeBestSize(int item) {
+static void uiComputeBestSize(int item, int dim) {
     UIitem *pitem = uiItemPtr(item);
     pitem->visited = 0;
     // children expand the size
     int kid = uiFirstChild(item);
     while (kid >= 0) {
-        uiComputeBestSize(kid);
+        uiComputeBestSize(kid, dim);
         kid = uiNextSibling(kid);
     }
     
-    uiComputeSizeDim(pitem, 0);
-    uiComputeSizeDim(pitem, 1);
+    uiComputeSizeDim(pitem, dim);
 }
 
-static void uiLayoutChildItem(UIitem *pparent, UIitem *pitem, int *dyncount, int dim) {
+static void uiLayoutChildItem(UIitem *pparent, UIitem *pitem, 
+    int *dyncount, int *consumed_space, int dim) {
     if (pitem->visited & (4<<dim)) return;
     pitem->visited |= (4<<dim);
     
-    if (!pitem->size.v[dim]) {
-        *dyncount = (*dyncount)+1;
-    }
-    
     int wdim = dim+2;
     
-    int wl = 0;
-    int wr = pparent->rect.v[wdim];
+    int x = 0;
+    int s = pparent->rect.v[wdim];
     
     int flags = pitem->layout_flags>>dim;
     int hasl = (flags & UI_LEFT) && (pitem->relto[dim] >= 0);
     int hasr = (flags & UI_RIGHT) && (pitem->relto[wdim] >= 0);
     
+    if ((flags & UI_HFILL) != UI_HFILL) {
+        *consumed_space = (*consumed_space)
+            + pitem->rect.v[wdim]
+            + pitem->margins[wdim]
+            + pitem->margins[dim];
+    } else if (!pitem->size.v[dim]) {
+        *dyncount = (*dyncount)+1;
+    }
+    
     if (hasl) {
         UIitem *pl = uiItemPtr(pitem->relto[dim]);
-        uiLayoutChildItem(pparent, pl, dyncount, dim);
-        wl = pl->rect.v[dim]+pl->rect.v[wdim]+pl->margins[wdim];
-        wr -= wl;
+        uiLayoutChildItem(pparent, pl, dyncount, consumed_space, dim);
+        x = pl->rect.v[dim]+pl->rect.v[wdim]+pl->margins[wdim];
+        s -= x;
     }
     if (hasr) {
         UIitem *pl = uiItemPtr(pitem->relto[wdim]);
-        uiLayoutChildItem(pparent, pl, dyncount, dim);
-        wr = pl->rect.v[dim]-pl->margins[dim]-wl;
+        uiLayoutChildItem(pparent, pl, dyncount, consumed_space, dim);
+        s = pl->rect.v[dim]-pl->margins[dim]-x;
     }
 
     switch(flags & UI_HFILL) {
     default:
     case UI_HCENTER: {
-        pitem->rect.v[dim] = wl+(wr-pitem->rect.v[wdim])/2+pitem->margins[dim];
+        pitem->rect.v[dim] = x+(s-pitem->rect.v[wdim])/2+pitem->margins[dim];
     } break;
     case UI_LEFT: {
-        pitem->rect.v[dim] = wl+pitem->margins[dim];
+        pitem->rect.v[dim] = x+pitem->margins[dim];
     } break;
     case UI_RIGHT: {
-        pitem->rect.v[dim] = wl+wr-pitem->rect.v[wdim]-pitem->margins[wdim];
+        pitem->rect.v[dim] = x+s-pitem->rect.v[wdim]-pitem->margins[wdim];
     } break;
     case UI_HFILL: {
         if (pitem->size.v[dim]) { // hard maximum size; can't stretch
-            if (hasl)
-                pitem->rect.v[dim] = wl+wr-pitem->rect.v[wdim]-pitem->margins[wdim];
+            if (!hasl)
+                pitem->rect.v[dim] = x+pitem->margins[dim];
             else
-                pitem->rect.v[dim] = wl+pitem->margins[dim];
+                pitem->rect.v[dim] = x+s-pitem->rect.v[wdim]-pitem->margins[wdim];
         } else {
             if (1) { //!pitem->rect.v[wdim]) {
-                int width = (pparent->rect.v[wdim] - pparent->computed_size.v[dim]);
+                //int width = (pparent->rect.v[wdim] - pparent->computed_size.v[dim]);
+                int width = (pparent->rect.v[wdim] - (*consumed_space));
                 int space = width / (*dyncount);
                 //int rest = width - space*(*dyncount);
                 if (!hasl) {
-                    pitem->rect.v[dim] = wl+pitem->margins[dim];
-                    pitem->rect.v[wdim] = wr-pitem->margins[dim]-pitem->margins[wdim];
+                    pitem->rect.v[dim] = x+pitem->margins[dim];
+                    pitem->rect.v[wdim] = s-pitem->margins[dim]-pitem->margins[wdim];
                 } else {
                     pitem->rect.v[wdim] = space-pitem->margins[dim]-pitem->margins[wdim];
-                    pitem->rect.v[dim] = wl+wr-pitem->rect.v[wdim]-pitem->margins[wdim];
+                    pitem->rect.v[dim] = x+s-pitem->rect.v[wdim]-pitem->margins[wdim];
                 }
             } else {
-                pitem->rect.v[dim] = wl+pitem->margins[dim];
-                pitem->rect.v[wdim] = wr-pitem->margins[dim]-pitem->margins[wdim];
+                pitem->rect.v[dim] = x+pitem->margins[dim];
+                pitem->rect.v[wdim] = s-pitem->margins[dim]-pitem->margins[wdim];
             }
         }
     } break;
@@ -981,24 +1221,25 @@ static void uiLayoutChildItem(UIitem *pparent, UIitem *pitem, int *dyncount, int
 }
 
 UI_INLINE void uiLayoutItemDim(UIitem *pitem, int dim) {
+    int wdim = dim+2;
     int kid = pitem->firstkid;
+    int consumed_space = 0;
+    int dyncount = 0;
     while (kid >= 0) {
         UIitem *pkid = uiItemPtr(kid);
-        int dyncount = 0;
-        uiLayoutChildItem(pitem, pkid, &dyncount, dim);
+        uiLayoutChildItem(pitem, pkid, &dyncount, &consumed_space, dim);
         kid = uiNextSibling(kid);
     }
 }
 
-static void uiLayoutItem(int item) {
+static void uiLayoutItem(int item, int dim) {
     UIitem *pitem = uiItemPtr(item);
     
-    uiLayoutItemDim(pitem, 0);
-    uiLayoutItemDim(pitem, 1);
+    uiLayoutItemDim(pitem, dim);
     
     int kid = uiFirstChild(item);
     while (kid >= 0) {
-        uiLayoutItem(kid);
+        uiLayoutItem(kid, dim);
         kid = uiNextSibling(kid);
     }
 }
@@ -1051,11 +1292,14 @@ void *uiAllocData(int item, int size) {
 void uiSetHandle(int item, UIhandle handle) {
     uiItemPtr(item)->handle = handle;
     if (handle) {
-        if (handle == ui_context->hot_handle)
-            ui_context->hot_item = item;
-        if (handle == ui_context->active_handle)
-            ui_context->active_item = item;
+        uiHashInsertHandle(handle, item);
     }
+}
+
+void uiSetSelfHandle(int item) {
+    UIitem *pitem = uiItemPtr(item);
+    pitem->handle = (UIhandle)pitem;
+    uiHashInsertHandle((UIhandle)pitem, item);
 }
 
 UIhandle uiGetHandle(int item) {
@@ -1084,6 +1328,28 @@ int uiGetChildCount(int item) {
     return uiItemPtr(item)->numkids;
 }
 
+UIrect uiGetAbsoluteRect(int item) {
+    UIrect rect = uiGetRect(item);
+    item = uiParent(item);
+    while (item >= 0) {
+        rect.x += uiItemPtr(item)->rect.x;
+        rect.y += uiItemPtr(item)->rect.y;
+        item = uiParent(item);
+    }    
+    return rect;
+}
+
+int uiContains(int item, int x, int y) {
+    UIrect rect = uiGetAbsoluteRect(item);
+    x -= rect.x;
+    y -= rect.y;
+    if ((x>=0)
+     && (y>=0)
+     && (x<rect.w)
+     && (y<rect.h)) return 1;
+    return 0;
+}
+
 int uiFindItem(int item, int x, int y, int ox, int oy) {
     UIitem *pitem = uiItemPtr(item);
     if (pitem->frozen) return -1;
@@ -1096,88 +1362,147 @@ int uiFindItem(int item, int x, int y, int ox, int oy) {
      && (y>=0)
      && (x<rect.w)
      && (y<rect.h)) {
-        int kid = uiFirstChild(item);
+        int kid = uiLastChild(item);
         while (kid >= 0) {
             int best_hit = uiFindItem(kid,x,y,ox,oy);
             if (best_hit >= 0) return best_hit;
-            kid = uiNextSibling(kid);
+            kid = uiPrevSibling(kid);
         }
-        rect.x += ox;
-        rect.y += oy;
-        ui_context->hot_rect = rect;
-        return item;
+        // click-through if the item has no handler for input events
+        if (pitem->event_flags & UI_ANY_INPUT) {
+            rect.x = ox;
+            rect.y = oy;
+            ui_context->hot_rect = rect;
+            return item;
+        }
     }
     return -1;
 }
 
-void uiProcess() {
+void uiLayout() {
+    assert(ui_context);
     if (!ui_context->count) return;
-    uiComputeBestSize(0);
+
+    // compute widths
+    uiComputeBestSize(0,0);
     // position root element rect
     uiItemPtr(0)->rect.x = uiItemPtr(0)->margins[0];
+    uiLayoutItem(0,0);
+    
+    // compute heights
+    uiComputeBestSize(0,1);
+    // position root element rect
     uiItemPtr(0)->rect.y = uiItemPtr(0)->margins[1];    
-    uiLayoutItem(0);
+    uiLayoutItem(0,1);
+
+    // drawing routines may require this to be set already
     int hot = uiFindItem(0, 
         ui_context->cursor.x, ui_context->cursor.y, 0, 0);
+    ui_context->hot_item = hot;
+}
+
+void uiProcess() {
+    assert(ui_context);
+    if (!ui_context->count) {
+        uiClearInputEvents();
+        return;
+    }
+    
+    int hot_item = uiGetItem(ui_context->hot_handle);
+    int active_item = uiGetItem(ui_context->active_handle);
+    int focus_item = uiGetItem(ui_context->focus_handle);
+
+    // send all keyboard events
+    if (focus_item >= 0) {
+        for (int i = 0; i < ui_context->eventcount; ++i) {
+            ui_context->active_key = ui_context->events[i].key;
+            ui_context->active_modifier = ui_context->events[i].mod;
+            uiNotifyItem(focus_item, 
+                ui_context->events[i].event);
+        }
+    } else {
+        ui_context->focus_handle = 0;
+    }
+    uiClearInputEvents();
+
+    int hot = ui_context->hot_item;
 
     switch(ui_context->state) {
     default:
     case UI_STATE_IDLE: {
         ui_context->start_cursor = ui_context->cursor;
         if (uiGetButton(0)) {
-            ui_context->hot_item = -1;
+            hot_item = -1;
+            active_item = hot;
             ui_context->active_rect = ui_context->hot_rect;
-            ui_context->active_item = hot;
-            if (ui_context->active_item >= 0) {
-                uiNotifyItem(ui_context->active_item, UI_BUTTON0_DOWN);
+            
+            if (active_item != focus_item) {
+                focus_item = -1;
+                ui_context->focus_handle = 0;
+            }
+            
+            if (active_item >= 0) {
+                uiNotifyItem(active_item, UI_BUTTON0_DOWN);
             }            
             ui_context->state = UI_STATE_CAPTURE;            
+        } else if (uiGetButton(2) && !uiGetLastButton(2) && (hot >= 0)) {
+            hot_item = -1;
+            ui_context->active_rect = ui_context->hot_rect;
+            uiNotifyItem(hot, UI_BUTTON2_DOWN);
         } else {
-            ui_context->hot_item = hot;
+            hot_item = hot;
         }
     } break;
     case UI_STATE_CAPTURE: {
         if (!uiGetButton(0)) {
-            if (ui_context->active_item >= 0) {
-                uiNotifyItem(ui_context->active_item, UI_BUTTON0_UP);
-                if (ui_context->active_item == hot) {
-                    uiNotifyItem(ui_context->active_item, UI_BUTTON0_HOT_UP);
+            if (active_item >= 0) {
+                uiNotifyItem(active_item, UI_BUTTON0_UP);
+                if (active_item == hot) {
+                    uiNotifyItem(active_item, UI_BUTTON0_HOT_UP);
                 }
             }
-            ui_context->active_item = -1;
+            active_item = -1;
             ui_context->state = UI_STATE_IDLE;
         } else {
-            if (ui_context->active_item >= 0) {
-                uiNotifyItem(ui_context->active_item, UI_BUTTON0_CAPTURE);
+            if (active_item >= 0) {
+                uiNotifyItem(active_item, UI_BUTTON0_CAPTURE);
             }            
-            if (hot == ui_context->active_item)
-                ui_context->hot_item = hot;
+            if (hot == active_item)
+                hot_item = hot;
             else
-                ui_context->hot_item = -1;
+                hot_item = -1;
         }
     } break;
     }
     
     ui_context->last_cursor = ui_context->cursor;
-    ui_context->hot_handle = (ui_context->hot_item>=0)?
-        uiGetHandle(ui_context->hot_item):0;
-    ui_context->active_handle = (ui_context->active_item>=0)?
-        uiGetHandle(ui_context->active_item):0;
+    ui_context->hot_handle = (hot_item>=0)?
+        uiGetHandle(hot_item):0;
+    ui_context->active_handle = (active_item>=0)?
+        uiGetHandle(active_item):0;
 }
 
 static int uiIsActive(int item) {
     assert(ui_context);
-    return ui_context->active_item == item;
+    return (ui_context->active_handle)&&(uiGetHandle(item) == ui_context->active_handle);
 }
 
 static int uiIsHot(int item) {
     assert(ui_context);
-    return ui_context->hot_item == item;
+    return (ui_context->hot_handle)&&(uiGetHandle(item) == ui_context->hot_handle);
+}
+
+static int uiIsFocused(int item) {
+    assert(ui_context);
+    return (ui_context->focus_handle)&&(uiGetHandle(item) == ui_context->focus_handle);
 }
 
 UIitemState uiGetState(int item) {
     UIitem *pitem = uiItemPtr(item);
     if (pitem->frozen) return UI_FROZEN;
+    if (uiIsFocused(item)) {
+        if (pitem->event_flags & (UI_KEY_DOWN|UI_CHAR|UI_KEY_UP)) return UI_ACTIVE;
+    }
     if (uiIsActive(item)) {
         if (pitem->event_flags & (UI_BUTTON0_CAPTURE|UI_BUTTON0_UP)) return UI_ACTIVE;
         if ((pitem->event_flags & UI_BUTTON0_HOT_UP)
