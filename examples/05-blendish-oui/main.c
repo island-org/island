@@ -22,6 +22,10 @@ typedef enum
     ST_ROW = 5,
     // check button
     ST_CHECK = 6,
+    // panel
+    ST_PANEL = 7,
+    // text
+    ST_TEXT = 8,
 } SubType;
 
 typedef struct
@@ -58,7 +62,11 @@ typedef struct
     float *progress;
 } UISliderData;
 
-////////////////////////////////////////////////////////////////////////////////
+typedef struct {
+    UIData head;
+    char *text;
+    int maxsize;
+} UITextData;
 
 // calculate which corners are sharp for an item, depending on whether
 // the container the item is in has negative spacing, and the item
@@ -107,7 +115,7 @@ void testrect(NVGcontext *vg, UIrect rect)
 #endif
 }
 
-void drawBlendishUi(NVGcontext *vg, int item, int x, int y)
+void drawUI(NVGcontext *vg, int item, int x, int y)
 {
     const UIData *head = (const UIData *)uiGetData(item);
     UIrect rect = uiGetRect(item);
@@ -121,6 +129,10 @@ void drawBlendishUi(NVGcontext *vg, int item, int x, int y)
     {
         switch (head->subtype) 
         {
+        case ST_PANEL: 
+            {
+                bndBevel(vg,rect.x,rect.y,rect.w,rect.h);
+            } break;
         case ST_LABEL: 
             {
                 const UIButtonData *data = (UIButtonData*)head;
@@ -163,6 +175,14 @@ void drawBlendishUi(NVGcontext *vg, int item, int x, int y)
                     cornerFlags(item),state,
                     *data->progress,data->label,value);
             } break;
+        case ST_TEXT: {
+            const UITextData *data = (UITextData*)head;
+            BNDwidgetState state = (BNDwidgetState)uiGetState(item);
+            int idx = strlen(data->text);
+            bndTextField(vg,rect.x,rect.y,rect.w,rect.h,
+                cornerFlags(item),state, -1, data->text, idx, idx);
+                      } break;
+
         default: 
             {
                 testrect(vg,rect);
@@ -179,7 +199,7 @@ void drawBlendishUi(NVGcontext *vg, int item, int x, int y)
         int kid = uiFirstChild(item);
         while (kid > 0)
         {
-            drawBlendishUi(vg, kid, rect.x, rect.y);
+            drawUI(vg, kid, rect.x, rect.y);
             kid = uiNextSibling(kid);
         }
     }
@@ -318,6 +338,55 @@ int slider(int parent, UIhandle handle, const char *label, float *progress)
     return item;
 }
 
+void textboxhandler(int item, UIevent event) {
+    UITextData *data = (UITextData *)uiGetData(item);
+    switch(event) {
+        default: break;
+        case UI_BUTTON0_DOWN: {
+            uiFocus(item);
+                              } break;
+        case UI_KEY_DOWN: {
+            unsigned int key = uiGetKey();
+            switch(key) {
+        default: break;
+        case GLFW_KEY_BACKSPACE: {
+            int size = strlen(data->text);
+            if (!size) return;
+            data->text[size-1] = 0;
+                                 } break;
+        case GLFW_KEY_ENTER: {
+            uiFocus(-1);
+                             } break;
+            }
+                          } break;
+        case UI_CHAR: {
+            unsigned int key = uiGetKey();
+            int size;
+            if ((key > 255)||(key < 32)) return;
+            size = strlen(data->text);
+            if (size >= (data->maxsize-1)) return;
+            data->text[size] = (char)key;
+                      } break;
+    }
+}
+
+int textbox(int parent, UIhandle handle, char *text, int maxsize) {
+    int item = uiItem();
+    UITextData *data;
+    uiSetHandle(item, handle);
+    uiSetSize(item, 0, BND_WIDGET_HEIGHT);
+    uiSetHandler(item, textboxhandler, 
+        UI_BUTTON0_DOWN | UI_KEY_DOWN | UI_CHAR);
+    // store some custom data with the button that we use for styling
+    // and logic, e.g. the pointer to the data we want to alter.
+    data = (UITextData *)uiAllocData(item, sizeof(UITextData));
+    data->head.subtype = ST_TEXT;
+    data->text = text;
+    data->maxsize = maxsize;
+    uiAppend(parent, item);
+    return item;
+}
+
 // simple logic for a radio button
 void radiohandler(int item, UIevent event)
 {
@@ -429,8 +498,9 @@ static float progress2 = 0.75f;
 static int option1 = 1;
 static int option2 = 0;
 static int option3 = 0;
+static char textbuffer[32] = "click and edit";
 
-void createUi(NVGcontext *vg, float w, float h)
+void createUI(NVGcontext *vg, float w, float h)
 {
     int col;
 
@@ -479,13 +549,34 @@ void createUi(NVGcontext *vg, float w, float h)
     check(col, __LINE__, "Frozen", &option1);
     check(col, __LINE__, "Item 7", &option2);
     check(col, __LINE__, "Item 8", &option3);
+
+    textbox(col, (UIhandle)textbuffer, textbuffer, 32);
+
+    uiLayout();
 }
 
 UIcontext *uictx;
 
+static void charevent(GLFWwindow *window, unsigned int value)
+{
+    NVG_NOTUSED(window);
+    uiSetChar(value);
+}
+
+static void keyevent(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    NVG_NOTUSED(scancode);
+    NVG_NOTUSED(mods);
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    uiSetKey(key, mods, action);
+}
+
 void setup()
 {
     size(640, 320);
+    glfwSetKeyCallback(window, keyevent);
+    glfwSetCharCallback(window, charevent);
 
     uictx = uiCreateContext();
     uiMakeCurrent(uictx);
@@ -505,10 +596,18 @@ void draw()
     uiSetCursor((int)mouseX,(int)mouseY);
     for (i=0; i<3; i++) uiSetButton(i, 0);
     if (mousePressed) uiSetButton(mouseButton, 1);
-
-    createUi(vg, width, height);
+    createUI(vg, width, height);
     uiProcess();
-    drawBlendishUi(vg, 0, 0, 0);
+    drawUI(vg, 0, 0, 0);
+    {
+        int x = mouseX - width/2;
+        int y = mouseY - height/2;
+        if (abs(x) > width/4) {
+            bndJoinAreaOverlay(vg, 0, 0, width, height, 0, (x > 0));
+        } else if (abs(y) > height/4) {
+            bndJoinAreaOverlay(vg, 0, 0, width, height, 1, (y > 0));
+        }
+    }
 
     if (key == GLFW_KEY_ESCAPE)
     {

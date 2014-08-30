@@ -9,4 +9,10 @@
 #include "blendish.h"
 
 #define OUI_IMPLEMENTATION
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "oui.h" 
+#ifdef __cplusplus
+}
+#endif

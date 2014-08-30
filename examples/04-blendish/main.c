@@ -3,6 +3,33 @@
 
 #include <blendish.h>
 
+void draw_noodles(NVGcontext *vg, int x, int y) {
+    int w = 200;
+    int s = 70;
+    int i;
+
+    bndNodeBackground(vg, x+w, y-50, 100, 200, BND_DEFAULT, BND_ICONID(6,3),
+        "Default", nvgRGBf(0.392f,0.392f,0.392f));
+    bndNodeBackground(vg, x+w+120, y-50, 100, 200, BND_HOVER, BND_ICONID(6,3),
+        "Hover", nvgRGBf(0.392f,0.392f,0.392f));
+    bndNodeBackground(vg, x+w+240, y-50, 100, 200, BND_ACTIVE, BND_ICONID(6,3),
+        "Active", nvgRGBf(0.392f,0.392f,0.392f));
+    
+    for (i = 0; i < 9; ++i) {
+        int a = i%3;
+        int b = i/3;
+        bndNodeWire(vg, x, y+s*a, x+w, y+s*b, (BNDwidgetState)a, (BNDwidgetState)b);
+    }
+    
+    bndNodePort(vg, x, y, BND_DEFAULT, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x+w, y, BND_DEFAULT, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x, y+s, BND_HOVER, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x+w, y+s, BND_HOVER, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x, y+2*s, BND_ACTIVE, nvgRGBf(0.5f, 0.5f, 0.5f));
+    bndNodePort(vg, x+w, y+2*s, BND_ACTIVE, nvgRGBf(0.5f, 0.5f, 0.5f));
+}
+
+
 void drawBlendish(NVGcontext *vg, float w, float h)
 {
     int rx, ry, rw;
@@ -162,6 +189,7 @@ void drawBlendish(NVGcontext *vg, float w, float h)
         bndTextField(vg,rx,ry,240,BND_WIDGET_HEIGHT,BND_CORNER_NONE,BND_ACTIVE,
             -1, edit_text, idx1, idx2);
     }
+    draw_noodles(vg, 20, ry+50);
 
     rx += rw + 20;
     ry = 10;
@@ -213,7 +241,7 @@ void drawBlendish(NVGcontext *vg, float w, float h)
 
 void setup()
 {
-    size(640, 320);
+    size(640, 640);
 
     bndSetFont(nvgCreateFont(vg, "system", "../3rdparty/blendish/DejaVuSans.ttf"));
     bndSetIconImage(nvgCreateImage(vg, "../3rdparty/blendish/blender_icons16.png", NVG_IMAGE_GENERATE_MIPMAPS));

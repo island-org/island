@@ -22,4 +22,7 @@
 /.project
 /bin
 /build
-3rdparty/lua/src/luaconf.h
+/3rdparty/lua/src/luaconf.h
+/3rdparty/blendish/blender_icons.svg
+.hg_archival.txt
+*.hgignore
