@@ -117,6 +117,28 @@ solution "island"
             "3rdparty/blendish/blendish_lib.cpp" 
         }
 
+    project "soloud"
+        language "C++"
+        includedirs { "3rdparty/soloud/include" }
+        files { 
+            "3rdparty/soloud/inlcude/*.h",
+            "3rdparty/soloud/src/core/*.cpp",
+            "3rdparty/soloud/src/audiosource/*.cpp",
+            "3rdparty/soloud/src/filter/*.cpp",
+            "3rdparty/soloud/src/c_api/*.cpp",
+        }
+        configuration "not windows"
+            defines {"WITH_OSS"}
+            files {
+                "3rdparty/soloud/src/backend/oss/*.cpp" 
+            }
+
+        configuration "windows"
+            defines {"WITH_WINMM"}
+            files {
+                "3rdparty/soloud/src/backend/winmm/*.cpp" 
+            }
+
     function create_example_project( example_path )
         example_path = string.sub(example_path, string.len("examples/") + 1);
         project (example_path)
@@ -140,14 +162,14 @@ solution "island"
                 "3rdparty/stb",
                 "3rdparty/AntTweakBar/include",
                 "3rdparty/blendish",
-                "3rdparty/bass/include",
+                "3rdparty/soloud/include",
             }
 
             libdirs {
                 "bin",
-                "3rdparty/bass/lib/windows",
             }
 
+            -- TODO: automatically collect lib names
             configuration "Debug"
                 links {
                     "glfw-d",
@@ -158,6 +180,7 @@ solution "island"
                     "stb-d",
                     "AntTweakBar-d",
                     "blendish-d",
+                    "soloud-d",
                 }
 
             configuration "Release"
@@ -170,12 +193,12 @@ solution "island"
                     "stb",
                     "AntTweakBar",
                     "blendish",
+                    "soloud",
                 }
 
             configuration "windows"
                 links {
                     "OpenGL32",
-                    "bass",
                 }
     end
 
