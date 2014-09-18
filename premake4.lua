@@ -122,7 +122,10 @@ solution "island"
         files { 
             "3rdparty/soloud/inlcude/*.h",
             "3rdparty/soloud/src/core/*.cpp",
-            "3rdparty/soloud/src/audiosource/*.cpp",
+            "3rdparty/soloud/src/audiosource/modplug/*.*",
+            "3rdparty/soloud/src/audiosource/sfxr/*.*",
+            "3rdparty/soloud/src/audiosource/speech/*.*",
+            "3rdparty/soloud/src/audiosource/wav/*.*",
             "3rdparty/soloud/src/filter/*.cpp",
             "3rdparty/soloud/src/c_api/*.cpp",
         }
