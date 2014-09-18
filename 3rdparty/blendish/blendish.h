@@ -1451,7 +1451,7 @@ void bndIcon(NVGcontext *ctx, float x, float y, int iconid) {
         nvgImagePattern(ctx,x-u,y-v,
         BND_ICON_SHEET_WIDTH,
         BND_ICON_SHEET_HEIGHT,
-        0,bnd_icon_image,0,1));
+        0,bnd_icon_image,0));
     nvgFill(ctx);
 }
 
