@@ -343,7 +343,7 @@ PImage loadImage(const char* filename)
 {
     PImage img = 
     {
-        nvgCreateImage(vg, filename)
+        nvgCreateImage(vg, filename, NVG_IMAGE_GENERATE_MIPMAPS)
     };
     if (img.id == 0)
     {
@@ -361,7 +361,7 @@ PImage createImage(int w, int h)
 {
     PImage img = 
     {
-        nvgCreateImageRGBA(vg, w, h, NULL),
+        nvgCreateImageRGBA(vg, w, h, NVG_IMAGE_GENERATE_MIPMAPS, NULL),
         w,
         h
     };
@@ -377,7 +377,7 @@ void updateImage(PImage img, const unsigned char* data)
 
 void image(PImage img, int x, int y, int w, int h)
 {
-    struct NVGpaint paint = nvgImagePattern(vg, x, y, w, h, 0, img.id, 0, 1);
+    struct NVGpaint paint = nvgImagePattern(vg, x, y, w, h, 0, img.id, 1);
     pushStyle();
     {
         noStroke();
