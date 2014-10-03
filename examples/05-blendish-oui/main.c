@@ -582,7 +582,7 @@ void setup()
     uiMakeCurrent(uictx);
 
     bndSetFont(nvgCreateFont(vg, "system", "../3rdparty/blendish/DejaVuSans.ttf"));
-    bndSetIconImage(nvgCreateImage(vg, "../3rdparty/blendish/blender_icons16.png", NVG_IMAGE_GENERATE_MIPMAPS));
+    bndSetIconImage(nvgCreateImage(vg, "../3rdparty/blendish/blender_icons16.png"));
 }
 
 void draw()

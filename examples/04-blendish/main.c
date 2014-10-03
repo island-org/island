@@ -29,7 +29,6 @@ void draw_noodles(NVGcontext *vg, int x, int y) {
     bndNodePort(vg, x+w, y+2*s, BND_ACTIVE, nvgRGBf(0.5f, 0.5f, 0.5f));
 }
 
-
 void drawBlendish(NVGcontext *vg, float w, float h)
 {
     int rx, ry, rw;
@@ -244,14 +243,11 @@ void setup()
     size(640, 640);
 
     bndSetFont(nvgCreateFont(vg, "system", "../3rdparty/blendish/DejaVuSans.ttf"));
-    bndSetIconImage(nvgCreateImage(vg, "../3rdparty/blendish/blender_icons16.png", NVG_IMAGE_GENERATE_MIPMAPS));
+    bndSetIconImage(nvgCreateImage(vg, "../3rdparty/blendish/blender_icons16.png"));
 }
 
 void draw()
 {
-    unsigned char mbut = 0;
-    int scrollarea1 = 0;
-
     background(gray(122));
 
     drawBlendish(vg, width, height);

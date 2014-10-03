@@ -27,6 +27,7 @@ solution "island"
         includedirs { "3rdparty/glfw/include" }
         files { 
             "3rdparty/glfw/include/GLFW/*.h",
+            "3rdparty/glfw/src/gamma.c",
             "3rdparty/glfw/src/context.c",
             "3rdparty/glfw/src/init.c",
             "3rdparty/glfw/src/input.c",

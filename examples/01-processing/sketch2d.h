@@ -343,7 +343,7 @@ PImage loadImage(const char* filename)
 {
     PImage img = 
     {
-        nvgCreateImage(vg, filename, NVG_IMAGE_GENERATE_MIPMAPS)
+        nvgCreateImage(vg, filename)
     };
     if (img.id == 0)
     {
@@ -361,7 +361,7 @@ PImage createImage(int w, int h)
 {
     PImage img = 
     {
-        nvgCreateImageRGBA(vg, w, h, NVG_IMAGE_GENERATE_MIPMAPS, NULL),
+        nvgCreateImageRGBA(vg, w, h, NULL),
         w,
         h
     };

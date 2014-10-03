@@ -1,11 +1,15 @@
-#include <stdio.h>
+#define SKETCH_2D_IMPLEMENTATION
+#include "../01-processing/sketch2d.h"
 #include <soloud_c.h>
 
-int main(int parc, char ** pars)
+int i = 0;
+Soloud* soloud;
+Speech* speech;
+
+void setup()
 {
-    int i = 0;
-    Soloud *soloud = Soloud_create();
-    Speech *speech = Speech_create();
+    soloud = Soloud_create();
+    speech = Speech_create();
 
     Speech_setText(speech, "1 2 3       A B C        Doooooo    Reeeeee    Miiiiii    Faaaaaa    Soooooo    Laaaaaa    Tiiiiii    Doooooo!");
 
@@ -15,7 +19,11 @@ int main(int parc, char ** pars)
     Soloud_play(soloud, speech);
 
     printf("Playing..\n");
+}
 
+void draw()
+{
+    background(gray(122));
     while (Soloud_getActiveVoiceCount(soloud) > 0)
     {
         float * v = Soloud_calcFFT(soloud);
@@ -29,6 +37,10 @@ int main(int parc, char ** pars)
         printf("%c\r", "|\\-/"[i&3]);
         i++;
     }
+}
+
+void shutdown()
+{
     printf("\nFinished.\n");
 
     Soloud_deinit(soloud);
@@ -37,5 +49,4 @@ int main(int parc, char ** pars)
     Soloud_destroy(soloud);
 
     printf("Cleanup done.\n");
-    return 0;
 }
