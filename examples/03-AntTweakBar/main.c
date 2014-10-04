@@ -57,16 +57,12 @@ void setup()
 
 void draw()
 {
-    if (keyPressed && key == GLFW_KEY_ESCAPE) quit();
-
     background(bgColor);
     fill(rectColor);
     rect(width / 2, height / 2, 200, 200);
 
     time = millis() * 0.001;
     TwDraw();
-
-    if (keyPressed && key == GLFW_KEY_SPACE) saveFrame("screenshot.png");
 }
 
 void shutdown()

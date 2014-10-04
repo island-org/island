@@ -26,18 +26,6 @@ void draw()
         image(img2, mouseX, mouseY, img2.width, img2.height);
     }
 
-    if (keyPressed)
-    {
-        if (key == GLFW_KEY_ESCAPE)
-        {
-            quit();
-        }
-        else if (key == GLFW_KEY_SPACE)
-        {
-            saveFrame("screenshot.png");
-        }
-    }
-
     textFont(font);
     textAlign(NVG_ALIGN_CENTER);
     textSize(30);

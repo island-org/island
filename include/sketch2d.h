@@ -344,7 +344,7 @@ float degrees(float rad)
 
 float radians(float deg)
 {
-    return nvgRadToDeg(deg);
+    return nvgDegToRad(deg);
 }
 
 PImage loadImage(const char* filename)
@@ -625,6 +625,17 @@ int main()
 
         nvgBeginFrame(vg, width, height, pxRatio);
 
+        if (keyPressed)
+        {
+            if (key == GLFW_KEY_ESCAPE)
+            {
+                quit();
+            }
+            else if (key == GLFW_KEY_SPACE)
+            {
+                saveFrame("screenshot.png");
+            }
+        }
         draw();
 
         nvgEndFrame(vg);

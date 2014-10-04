@@ -608,15 +608,6 @@ void draw()
             bndJoinAreaOverlay(vg, 0, 0, width, height, 1, (y > 0));
         }
     }
-
-    if (key == GLFW_KEY_ESCAPE)
-    {
-        quit();
-    }
-    else if (key == GLFW_KEY_SPACE)
-    {
-        saveFrame("screenshot.png");
-    }
 }
 
 void shutdown()

@@ -255,18 +255,6 @@ void draw()
     background(gray(122));
 
     drawBlendish(vg, width, height);
-
-    if (keyPressed)
-    {
-        if (key == GLFW_KEY_ESCAPE)
-        {
-            quit();
-        }
-        else if (key == GLFW_KEY_SPACE)
-        {
-            saveFrame("screenshot.png");
-        }
-    }
 }
 
 void shutdown()
