@@ -1,5 +1,5 @@
 #define SKETCH_2D_IMPLEMENTATION
-#include "../01-processing/sketch2d.h"
+#include "sketch2d.h"
 #include <soloud_c.h>
 
 int i = 0;

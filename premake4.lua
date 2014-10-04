@@ -155,6 +155,7 @@ solution "island"
                 "NANOVG_GL3_IMPLEMENTATION",
             }
             includedirs { 
+                "include",
                 "3rdparty",
                 "3rdparty/glfw/include",
                 "3rdparty/glew",

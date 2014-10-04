@@ -20,3 +20,9 @@ Statically rendering of blendish nanovg module.
 Dynaic blendish user interface with mouse interaction.
 
 ![](https://github.com/vinjn/island/raw/master/examples/05-blendish-oui/screenshot.png)
+
+### [06-tilemap-editor](https://github.com/vinjn/island/tree/master/examples/06-tilemap-editor)
+
+WIP intergration of `stb_tilemap_editor.h` and `sketch2d.h`, a 2d tilemap editor.
+
+![](https://github.com/vinjn/island/raw/master/examples/06-tilemap-editor/screenshot.png)
