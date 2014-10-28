@@ -5,7 +5,7 @@ PImage spriteSheet;
 
 void STBTE_DRAW_RECT(int x0, int y0, int x1, int y1, unsigned int clr);
 void STBTE_DRAW_TILE(int x0, int y0,
-                     unsigned short id, int highlight);
+                     unsigned short id, int highlight, float *data);
 
 #define STB_TILEMAP_EDITOR_IMPLEMENTATION
 #include "stb/stb_tilemap_editor.h"
@@ -78,9 +78,14 @@ void STBTE_DRAW_RECT(int x0, int y0, int x1, int y1, unsigned int clr)
     rect(x0, y0, x1 - x0, y1 - y0);
 }
 
+// this draws the tile image identified by 'id' in one of several
+// highlight modes (see STBTE_drawmode_* in the header section);
+// if 'data' is NULL, it's drawing the tile in the palette; if 'data'
+// is not NULL, it's drawing a tile on the map, and that is the data
+// associated with that map tile
 void STBTE_DRAW_TILE(int x0, int y0,
-                     unsigned short id, int highlight)
+                     unsigned short id, int highlight, float *data)
 {
     Rect src = {id * SPRITE_SHEET_GRID, 0, spriteSheet.width, spriteSheet.height};    Rect dst = {x0, y0, SPRITE_SHEET_GRID, SPRITE_SHEET_GRID};
-    if (highlight == STBTE_drawmode_emphasize)    {    }    imageEx(spriteSheet, src, dst);
+    if (highlight == STBTE_drawmode_emphasize)    {    }    if (data == NULL)    {    }    imageEx(spriteSheet, src, dst);
 }

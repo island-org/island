@@ -30,12 +30,8 @@ solution "island"
             "3rdparty/glfw/src/context.c",
             "3rdparty/glfw/src/init.c",
             "3rdparty/glfw/src/input.c",
-            "3rdparty/glfw/src/joystick.c",
             "3rdparty/glfw/src/monitor.c",
-            "3rdparty/glfw/src/time.c",
             "3rdparty/glfw/src/window.c",
-            "3rdparty/glfw/src/input.c",
-            "3rdparty/glfw/src/input.c",
         }
 
         defines { "_GLFW_USE_OPENGL" }
