@@ -114,7 +114,10 @@ solution "island"
 
     project "soloud"
         language "C++"
-        includedirs { "3rdparty/soloud/include" }
+        includedirs {
+            "3rdparty/soloud/include",
+            "3rdparty/soloud/ext/libmodplug/src/libmodplug",
+        }
         files { 
             "3rdparty/soloud/inlcude/*.h",
             "3rdparty/soloud/src/core/*.cpp",
@@ -124,6 +127,11 @@ solution "island"
             "3rdparty/soloud/src/audiosource/wav/*.*",
             "3rdparty/soloud/src/filter/*.cpp",
             "3rdparty/soloud/src/c_api/*.cpp",
+            "3rdparty/soloud/ext/libmodplug/src/*.cpp",
+        }
+        defines {
+            "WITH_MODPLUG",
+            "MODPLUG_STATIC"
         }
         configuration "not windows"
             defines {"WITH_OSS"}
