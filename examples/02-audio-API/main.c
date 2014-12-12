@@ -1,8 +1,8 @@
 #define SKETCH_2D_IMPLEMENTATION
 #include "sketch2d.h"
 
-const char sentence[] = "Hello world, Island C API is cool!";
-PAudio speech;
+const char sentence[] = "Hello world, Island C API is cool! Hit the keyboard!";
+PAudio speech, keySound;
 PFont font;
 
 void setup()
@@ -20,14 +20,23 @@ void draw()
     {
         float * v = Soloud_calcFFT(soloud);
         int p = (int)(v[10] * 30);
-		rect(10, 10, p * 10, 30);
+        rect(10, 10, p * 10, 30);
+    }
+
+    if (keyReleased)
+    {
+        char sentence[20];
+        sprintf(sentence, "%c", key);
+        destroyAudio(keySound);
+        keySound = loadSpeech(sentence);
+        playAudio(keySound);
     }
 
     textFont(font);
     textAlign(NVG_ALIGN_LEFT);
     textSize(30);
     textLeading(5);
-	text(sentence, 10, 100);
+    text(sentence, 10, 100);
 }
 
 void shutdown()

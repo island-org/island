@@ -156,12 +156,14 @@ extern int mouseButton;
 // Input - Keyboard
 //
 extern int keyPressed;
+extern int keyReleased;
 extern int key;
 
 //
 // Input - Time & Date
 //
 double millis();
+extern int frameCount;
 
 //
 // Math - Random
@@ -223,7 +225,10 @@ static int isFill = 1;
 static int isStroke = 1;
 
 int keyPressed;
+int keyReleased;
 int key;
+
+int frameCount;
 
 double millis()
 {
@@ -366,7 +371,7 @@ PImage loadImage(const char* filename)
 
     nvgImageSize(vg, img.id, &img.width, &img.height);
     img.tex = nvglImageHandle(vg, img.id);
-    
+
     return img;
 }
 
@@ -581,7 +586,7 @@ int main()
     displayWidth = vidMode->width;
     displayHeight = vidMode->height;
 
-	setupSoloud();
+    setupSoloud();
     setup();
 
     while (!glfwWindowShouldClose(window))
@@ -613,15 +618,24 @@ int main()
         }
 
         // keyboard event
-        keyPressed = 0;
-        key = GLFW_KEY_UNKNOWN;
-        for (i=0; i<GLFW_KEY_LAST; i++)
+        if (keyPressed && glfwGetKey(window, key) == GLFW_RELEASE)
         {
-            if (glfwGetKey(window, i) == GLFW_PRESS)
+            keyReleased = 1;
+            keyPressed = 0;
+        }
+        else
+        {
+            keyReleased = 0;
+            keyPressed = 0;
+            key = GLFW_KEY_UNKNOWN;
+            for (i=0; i<GLFW_KEY_LAST; i++)
             {
-                keyPressed = 1;
-                key = i;
-                break;
+                if (glfwGetKey(window, i) == GLFW_PRESS)
+                {
+                    keyPressed = 1;
+                    key = i;
+                    break;
+                }
             }
         }
 
@@ -652,6 +666,8 @@ int main()
 
         pmouseX = mouseX;
         pmouseY = mouseY;
+
+        frameCount++;
     }
 
     shutdown();

@@ -68,7 +68,7 @@ void shutdownSoloud()
         Soloud_deinit(soloud);
         Soloud_destroy(soloud);
 
-		soloud = NULL;
+        soloud = NULL;
     }
 }
 
@@ -80,7 +80,7 @@ PAudio loadSpeech(const char* speech)
         SOURCE_SPEECH,
         Speech_create(),
     };
-    
+
     Speech_setText(newAudio.source, speech);
     return newAudio;
 }
@@ -92,6 +92,16 @@ PAudio loadAudio(const char* filename)
     PAudio newAudio = {0};
 
     {
+        Wav* source = Wav_create();
+        if (Wav_load(source, filename) == 0)
+        {
+            newAudio.type = SOURCE_WAV;
+            newAudio.source = source;
+            return newAudio;
+        }
+        Wav_destroy(source);
+    }
+    {
         Modplug* source = Modplug_create();
         if (Modplug_load(source, filename) == 0)
         {
@@ -102,27 +112,20 @@ PAudio loadAudio(const char* filename)
         Modplug_destroy(source);
     }
 
-    {
-        Wav* source = Wav_create();
-        if (Wav_load(source, filename) == 0)
-        {
-            newAudio.type = SOURCE_WAV;
-            newAudio.source = source;
-            return newAudio;
-        }
-        Wav_destroy(source);
-    }
-
     return newAudio;
 }
 
 void playAudio(PAudio audio)
 {
+    if (audio.source == NULL) return;
+
     audio.voiceHandle = Soloud_play(soloud, audio.source);
 }
 
 void stopAudio(PAudio audio)
 {
+    if (audio.voiceHandle == 0) return;
+
     switch (audio.type)
     {
     case SOURCE_MOD_PLUG:       Modplug_stop(audio.source); break;
@@ -135,6 +138,8 @@ void stopAudio(PAudio audio)
 
 void destroyAudio(PAudio audio)
 {
+    if (audio.voiceHandle == 0) return;
+
     switch (audio.type)
     {
     case SOURCE_MOD_PLUG:       Modplug_destroy(audio.source); break;
