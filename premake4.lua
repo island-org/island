@@ -3,7 +3,7 @@
 local action = _ACTION or ""
 
 solution "island"
-    location (".project")
+    location ("_project")
     configurations { "Debug", "Release" }
     platforms {"native", "x64", "x32"}
     language "C"
