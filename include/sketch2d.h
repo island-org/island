@@ -268,6 +268,9 @@ void size(int winWidth, int winHeight)
     glfwGetWindowSize(window, &width, &height);
     glfwMakeContextCurrent(window);
 
+    puts(glGetString(GL_VERSION));
+    puts(glGetString(GL_VENDOR));
+
     if (!sGlewInitialzed)
     {
         sGlewInitialzed = GL_TRUE;
@@ -359,7 +362,7 @@ float radians(float deg)
 
 PImage loadImage(const char* filename)
 {
-    PImage img = 
+    PImage img =
     {
         nvgCreateImage(vg, filename, NVG_IMAGE_GENERATE_MIPMAPS)
     };
@@ -377,7 +380,7 @@ PImage loadImage(const char* filename)
 
 PImage createImage(int w, int h)
 {
-    PImage img = 
+    PImage img =
     {
         nvgCreateImageRGBA(vg, w, h, NVG_IMAGE_GENERATE_MIPMAPS, NULL),
         w,
@@ -407,8 +410,8 @@ void imageEx(PImage img, Rect src, Rect dst)
 
 void image(PImage img, int x, int y, int w, int h)
 {
-    Rect src = {0, 0, img.width, img.height};
-    Rect dst = {x, y, w, h};
+    Rect src = { 0, 0, img.width, img.height };
+    Rect dst = { x, y, w, h };
     imageEx(img, src, dst);
 }
 
@@ -571,13 +574,33 @@ int main()
     }
 
     glfwSetErrorCallback(onGlfwError);
-#ifndef _WIN32 // don't require this on win32, and works with more cards
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifndef ISLAND_GL_VERSION_MAJOR
+#define ISLAND_GL_VERSION_MAJOR 4
 #endif
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ISLAND_GL_VERSION_MAJOR);
+
+#ifndef ISLAND_GL_VERSION_MINOR
+#define ISLAND_GL_VERSION_MINOR 5
+#endif
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ISLAND_GL_VERSION_MINOR);
+
+#ifndef ISLAND_GL_FORWARD_COMPAT
+#define ISLAND_GL_FORWARD_COMPAT GL_TRUE
+#endif
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+#ifndef ISLAND_GL_PROFILE
+#define ISLAND_GL_PROFILE GLFW_OPENGL_CORE_PROFILE
+#endif
+    glfwWindowHint(GLFW_OPENGL_PROFILE, ISLAND_GL_PROFILE);
+
+#ifndef ISLAND_GL_DEBUG_CONTEXT
+#define ISLAND_GL_DEBUG_CONTEXT GL_TRUE
+#endif
+    // TODO: add debug callback if possible
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, ISLAND_GL_DEBUG_CONTEXT);
+
     size(1024, 768);
 
     glfwSetTime(0);
@@ -607,7 +630,7 @@ int main()
 
         mousePressed = 0;
         mouseButton = GLFW_KEY_UNKNOWN;
-        for (i=0; i<GLFW_MOUSE_BUTTON_LAST; i++)
+        for (i = 0; i < GLFW_MOUSE_BUTTON_LAST; i++)
         {
             if (glfwGetMouseButton(window, i) == GLFW_PRESS)
             {
@@ -628,7 +651,7 @@ int main()
             keyReleased = 0;
             keyPressed = 0;
             key = GLFW_KEY_UNKNOWN;
-            for (i=0; i<GLFW_KEY_LAST; i++)
+            for (i = 0; i < GLFW_KEY_LAST; i++)
             {
                 if (glfwGetKey(window, i) == GLFW_PRESS)
                 {
@@ -679,10 +702,10 @@ int main()
 
 static void _flipHorizontal(unsigned char* image, int w, int h, int stride, int comp)
 {
-    int i = 0, j = h-1, k;
+    int i = 0, j = h - 1, k;
     while (i < j) {
-        unsigned char* ri = &image[i * stride];		
-        unsigned char* rj = &image[j * stride];		
+        unsigned char* ri = &image[i * stride];
+        unsigned char* rj = &image[j * stride];
         for (k = 0; k < w*comp; k++) {
             unsigned char t = ri[k];
             ri[k] = rj[k];
@@ -729,7 +752,7 @@ void saveFrame(const char* name)
 
 PFont loadFont(const char* filename)
 {
-    PFont font = 
+    PFont font =
     {
         nvgCreateFont(vg, filename, filename),
     };
@@ -835,7 +858,7 @@ static GLboolean _checkFirstVertex(float x, float y)
 
 void bezierVertex(float c1x, float c1y, float c2x, float c2y, float x, float y)
 {
-    if (!_checkFirstVertex(x,y))
+    if (!_checkFirstVertex(x, y))
     {
         nvgBezierTo(vg, c1x, c1y, c2x, c2y, x, y);
     }
@@ -848,7 +871,7 @@ void curveVertex(float x, float y)
 
 void quadraticVertex(float cx, float cy, float x, float y)
 {
-    if (!_checkFirstVertex(x,y))
+    if (!_checkFirstVertex(x, y))
     {
         nvgQuadTo(vg, cx, cy, x, y);
     }
@@ -856,7 +879,7 @@ void quadraticVertex(float cx, float cy, float x, float y)
 
 void vertex(float x, float y)
 {
-    if (!_checkFirstVertex(x,y))
+    if (!_checkFirstVertex(x, y))
     {
         nvgLineTo(vg, x, y);
     }
