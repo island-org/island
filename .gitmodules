@@ -31,3 +31,9 @@
 [submodule "3rdparty/Remotery"]
 	path = 3rdparty/Remotery
 	url = https://github.com/island-org/Remotery.git
+[submodule "3rdparty/linmath"]
+	path = 3rdparty/linmath
+	url = https://github.com/datenwolf/linmath.h.git
+[submodule "3rdparty/klib"]
+	path = 3rdparty/klib
+	url = https://github.com/attractivechaos/klib.git
