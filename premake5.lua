@@ -146,18 +146,21 @@ solution "island"
             }
 
     function create_example_project( example_path )
-        example_path = string.sub(example_path, string.len("examples/") + 1);
-        project (example_path)
+        leaf_name = string.sub(example_path, string.len("examples/") + 1);
+        local needcuda = string.find(leaf_name, "cuda");
+
+        project (leaf_name)
             kind "ConsoleApp"
             files { 
-                "examples/" .. example_path .. "/*.h",
-                "examples/" .. example_path .. "/*.lua",
-                "examples/" .. example_path .. "/*.c",
+                "examples/" .. leaf_name .. "/*.h",
+                "examples/" .. leaf_name .. "/*.lua",
+                "examples/" .. leaf_name .. "/*.c",
             }
             defines { 
                 "GLEW_STATIC",
                 "NANOVG_GL3_IMPLEMENTATION",
             }
+
             includedirs { 
                 "include",
                 "3rdparty",
@@ -207,6 +210,25 @@ solution "island"
                 links {
                     "OpenGL32",
                 }
+
+            if needcuda then
+                local CUDA_PATH = os.getenv("CUDA_PATH");
+                includedirs { 
+                    path.join("$(CUDA_PATH)", "include"),
+                }
+                links {
+                    "cuda.lib",
+                    "nvrtc.lib"
+                }
+                configuration {"x32", "windows"}
+                    libdirs {
+                        path.join("$(CUDA_PATH)", "lib/win32"),
+                    }
+                configuration {"x64", "windows"}
+                    libdirs {
+                        path.join("$(CUDA_PATH)", "lib/x64"),
+                    }
+            end
     end
 
     local examples = os.matchdirs("examples/*")

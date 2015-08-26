@@ -575,6 +575,7 @@ int main()
 
     glfwSetErrorCallback(onGlfwError);
 
+#if 0
 #ifndef ISLAND_GL_VERSION_MAJOR
 #define ISLAND_GL_VERSION_MAJOR 4
 #endif
@@ -600,6 +601,7 @@ int main()
 #endif
     // TODO: add debug callback if possible
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, ISLAND_GL_DEBUG_CONTEXT);
+#endif
 
     size(1024, 768);
 

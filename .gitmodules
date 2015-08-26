@@ -15,7 +15,7 @@
 	url = https://github.com/akheron/jansson.git
 [submodule "3rdparty/stb/stb"]
 	path = 3rdparty/stb/stb
-	url = https://github.com/nothings/stb.git
+	url = https://github.com/island-org/stb.git
 [submodule "3rdparty/libhl"]
 	path = 3rdparty/libhl
 	url = https://github.com/xant/libhl.git
