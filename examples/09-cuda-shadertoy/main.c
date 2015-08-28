@@ -3,6 +3,7 @@
 
 // For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
+#include <cuda_gl_interop.h>
 #include <cuda.h>
 #include <cudaProfiler.h>
 #include <nvrtc.h>
@@ -112,9 +113,12 @@ CUdeviceptr d_C;
 const int numElements = 50000;
 CUfunction kernel_addr;
 size_t item_size;
+PImage img;
+unsigned char* img_content;
 
 void setup()
 {
+#if 0
     checkCudaErrors(cuInit(0));
 
     char* kernel_file = "../examples/09-cuda-shadertoy/vectorAdd_kernel.cu";
@@ -157,10 +161,16 @@ void setup()
     printf("Copy input data from the host memory to the CUDA device\n");
     checkCudaErrors(cuMemcpyHtoD(d_A, h_A, item_size));
     checkCudaErrors(cuMemcpyHtoD(d_B, h_B, item_size));
+
+#endif
+
+    img = createImage(width, height);
+    img_content = (unsigned char*)malloc(width * height * 4);
 }
 
 void draw()
 {
+#if 0
     // Launch the Vector Add CUDA Kernel
     int threadsPerBlock = 256;
     int blocksPerGrid = (numElements + threadsPerBlock - 1) / threadsPerBlock;
@@ -191,21 +201,40 @@ void draw()
             exit(EXIT_FAILURE);
         }
     }
+#endif
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            unsigned char* rgba = img_content + (y * width + x) * 4;
+            rgba[0] = rand() % 255;
+            rgba[1] = rand() % 255;
+            rgba[2] = rand() % 255;
+            rgba[3] = 255;
+        }
+    }
+    updateImage(img, img_content);
+    image(img, 0, 0, width, height);
+
+    ellipse(mouseX, mouseY, 10, 10);
 }
 
 void shutdown()
 {
+#if 0
     // Free device global memory
     checkCudaErrors(cuMemFree(d_A));
     checkCudaErrors(cuMemFree(d_B));
     checkCudaErrors(cuMemFree(d_C));
-
     // Free host memory
     free(h_A);
     free(h_B);
     free(h_C);
 
     cuProfilerStop();
+#endif
+
+    free(img_content);
 
     printf("Done\n");
 }

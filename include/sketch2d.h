@@ -383,6 +383,7 @@ PImage createImage(int w, int h)
     PImage img =
     {
         nvgCreateImageRGBA(vg, w, h, NVG_IMAGE_GENERATE_MIPMAPS, NULL),
+        0, // tex
         w,
         h
     };
