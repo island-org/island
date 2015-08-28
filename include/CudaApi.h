@@ -12,6 +12,8 @@
 #ifndef _DRVAPI_ERROR_STRING_H_
 #define _DRVAPI_ERROR_STRING_H_
 
+// TODO: add CUDA_API_IMPLEMENTATION macro
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -49,7 +51,7 @@ static void __checkCudaErrors(CUresult err, const char *file, const int line)
     }
 }
 
-void compileFileToPTX(char *filename, int argc, const char **argv,
+void compileFileToPTX(const char *filename, int argc, const char **argv,
     char **ptxResult, size_t *ptxResultSize)
 {
     FILE* fp = fopen(filename, "rb");
@@ -113,6 +115,20 @@ CUmodule loadPTX(char *ptx)
     checkCudaErrors(cuModuleLoadDataEx(&module, ptx, 0, 0, 0));
 
     return module;
+}
+
+CUfunction getCompiledKernel(const char* kernel_file, const char* entry_name)
+{
+    char* ptx;
+    size_t ptxSize;
+    // TODO: cache the PTX
+    compileFileToPTX(kernel_file, 0, NULL, &ptx, &ptxSize);
+    CUmodule module = loadPTX(ptx);
+
+    CUfunction kernel_addr;
+    checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, entry_name));
+
+    return kernel_addr;
 }
 
 // Error Code string definitions here

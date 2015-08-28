@@ -14,14 +14,11 @@ void setup()
     checkCudaErrors(cuInit(0));
 
     char* kernel_file = "../examples/09-cuda-shadertoy/random.cu";
-    char* ptx;
-    size_t ptxSize;
-    compileFileToPTX(kernel_file, 0, NULL, &ptx, &ptxSize);
-    CUmodule module = loadPTX(ptx);
-    checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "main"));
+    kernel_addr = getCompiledKernel(kernel_file, "main");
 
     item_size = width * height * 4;
     checkCudaErrors(cuMemAlloc(&d_img_content, item_size));
+
     img = createImage(width, height);
     img_content = (unsigned char*)malloc(item_size);
 }
