@@ -1,4 +1,4 @@
-#ifndef _SHADER_TOY_CUH_
+#ifndef _SHADER_TOY_CU_
 
 __constant__ float3	iResolution;	// image	The viewport resolution (z is pixel aspect ratio, usually 1.0)
 __constant__ float	iGlobalTime;	// image/sound	Current time in seconds
@@ -8,5 +8,11 @@ __constant__ float4	iMouse;	// image	xy = current pixel coords (if LMB is down).
 // __constant__ sampler2D	iChannel{i}	// image/sound	Sampler for input textures i
 // __constant__ float4	iDate;	// image/sound	Year, month, day, time in seconds in .xyzw
 // __constant__ float	iSampleRate;	// image/sound	The sound sample rate (typically 44100)
+
+__device__ float2 calcFragCoord()
+{
+	float2 coord = { blockIdx.x * blockDim.x + threadIdx.x, blockIdx.y * blockDim.y + threadIdx.y};
+	return coord;
+}
 
 #endif

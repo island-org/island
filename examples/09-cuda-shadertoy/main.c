@@ -26,7 +26,7 @@ void setup()
     checkCudaErrors(cuInit(0));
 
     CUmodule module = createModuleFromFile("../examples/09-cuda-shadertoy/random.cu");
-    checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "cuda_main"));
+    checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "mainImage"));
 
     // TODO: take care of bytes
     size_t bytes;

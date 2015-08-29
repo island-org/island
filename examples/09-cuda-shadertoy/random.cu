@@ -1,19 +1,17 @@
-#include "shadertoy.cuh"
+#include "shadertoy.cu"
 
-extern "C" __global__ void
-cuda_main(unsigned char *outColor)
+extern "C" __global__ void mainImage(unsigned char* fragColor)
 {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-    float u = x / (float) iResolution.x;
-    float v = y / (float) iResolution.y;
+    float2 fragCoord = calcFragCoord();
+    float u = fragCoord.x / iResolution.x;
+    float v = fragCoord.y / iResolution.y;
 
-    if ((x < iResolution.x) && (y < iResolution.y))
+    if ((fragCoord.x < iResolution.x) && (fragCoord.y < iResolution.y))
     {
-        int idx = (y * iResolution.x + x) * 4;
-        outColor[idx+0] = u * 255;
-        outColor[idx+1] = v * 255;
-        outColor[idx+2] = 122 + 122*sin(iGlobalTime);
-        outColor[idx+3] = 255;
+        int idx = (fragCoord.y * iResolution.x + fragCoord.x) * 4;
+        fragColor[idx+0] = u * 255;
+        fragColor[idx+1] = v * 255;
+        fragColor[idx+2] = 122 + 122*sin(iGlobalTime);
+        fragColor[idx+3] = 255;
     }
 }
