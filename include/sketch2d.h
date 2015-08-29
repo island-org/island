@@ -23,6 +23,8 @@ void setup();
 void draw();
 void shutdown();
 
+extern GLboolean isResized();
+
 //
 // Structure
 //
@@ -60,6 +62,7 @@ typedef struct
 // Supports jpg, png, psd, tga, pic and gif
 PImage loadImage(const char* filename);
 PImage createImage(int w, int h);
+void deleteImage(PImage img);
 void updateImage(PImage img, const unsigned char* data);
 
 void image(PImage img, int x, int y, int w, int h);
@@ -387,6 +390,11 @@ PImage createImage(int w, int h)
     return img;
 }
 
+void deleteImage(PImage img)
+{
+    nvgDeleteImage(vg, img.id);
+}
+
 void updateImage(PImage img, const unsigned char* data)
 {
     nvgUpdateImage(vg, img.id, data);
@@ -559,6 +567,23 @@ static void onGlfwError(int error, const char* desc)
     printf("GLFW error %d: %s\n", error, desc);
 }
 
+GLboolean _isResized = GL_FALSE;
+int _newWidth, _newHeight;
+static void onGlfwWindowResize(GLFWwindow* wnd, int w, int h)
+{
+    _newWidth = w;
+    _newHeight = h;
+    _isResized = GL_TRUE;
+}
+
+GLboolean isResized()
+{
+    GLboolean ret = _isResized;
+    _isResized = GL_FALSE;
+
+    return ret;
+}
+
 int main()
 {
     const GLFWvidmode* vidMode;
@@ -608,6 +633,8 @@ int main()
     displayHeight = vidMode->height;
 
     setup();
+    
+    glfwSetWindowSizeCallback(window, onGlfwWindowResize);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -675,6 +702,11 @@ int main()
             {
                 saveFrame("screenshot.png");
             }
+        }
+        if (_isResized)
+        {
+            width = _newWidth;
+            height = _newHeight;
         }
         draw();
 

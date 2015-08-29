@@ -9,6 +9,15 @@ PImage img;
 unsigned char* img_content;
 size_t item_size;
 
+void setupResource()
+{
+    item_size = width * height * 4;
+
+    img = createImage(width, height);
+    img_content = (unsigned char*)malloc(item_size);
+    checkCudaErrors(cuMemAlloc(&d_img_content, item_size));
+}
+
 void setup()
 {
     checkCudaErrors(cuInit(0));
@@ -16,15 +25,18 @@ void setup()
     char* kernel_file = "../examples/09-cuda-shadertoy/random.cu";
     kernel_addr = getCompiledKernel(kernel_file, "kernel");
 
-    item_size = width * height * 4;
-    checkCudaErrors(cuMemAlloc(&d_img_content, item_size));
-
-    img = createImage(width, height);
-    img_content = (unsigned char*)malloc(item_size);
+    setupResource();
 }
 
 void draw()
 {
+    if (isResized())
+    {
+        deleteImage(img);
+        free(img_content);
+        checkCudaErrors(cuMemFree(d_img_content));
+        setupResource();
+    }
     // Launch the Vector Add CUDA Kernel
     int threadsPerBlock = 256;
     int blocksPerGrid = (img.width * img.height + threadsPerBlock - 1) / threadsPerBlock;
