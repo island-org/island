@@ -14,7 +14,7 @@ void setup()
     checkCudaErrors(cuInit(0));
 
     char* kernel_file = "../examples/09-cuda-shadertoy/random.cu";
-    kernel_addr = getCompiledKernel(kernel_file, "main");
+    kernel_addr = getCompiledKernel(kernel_file, "kernel");
 
     item_size = width * height * 4;
     checkCudaErrors(cuMemAlloc(&d_img_content, item_size));
@@ -28,28 +28,23 @@ void draw()
     // Launch the Vector Add CUDA Kernel
     int threadsPerBlock = 256;
     int blocksPerGrid = (img.width * img.height + threadsPerBlock - 1) / threadsPerBlock;
-    printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
-    dim3 cudaBlockSize = { threadsPerBlock, 1, 1 };
-    dim3 cudaGridSize = { blocksPerGrid, 1, 1 };
+    //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
+    dim3 blockDim = { 16, 16, 1 };
+    dim3 gridDim = { width / blockDim.x, height / blockDim.y, 1 };
 
     void *arr[] = { (void *)&d_img_content, (void *)&img.width, (void *)&img.height };
     checkCudaErrors(cuLaunchKernel(kernel_addr,
-        cudaGridSize.x, cudaGridSize.y, cudaGridSize.z, /* grid dim */
-        cudaBlockSize.x, cudaBlockSize.y, cudaBlockSize.z, /* block dim */
+        gridDim.x, gridDim.y, gridDim.z, /* grid dim */
+        blockDim.x, blockDim.y, blockDim.z, /* block dim */
         0, 0, /* shared mem, stream */
         &arr[0], /* arguments */
         0));
     checkCudaErrors(cuCtxSynchronize());
 
-    // Copy the device result vector in device memory to the host result vector
-    // in host memory.
-    printf("Copy output data from the CUDA device to the host memory\n");
     checkCudaErrors(cuMemcpyDtoH(img_content, d_img_content, item_size));
 
     updateImage(img, img_content);
     image(img, 0, 0, width, height);
-
-    ellipse(mouseX, mouseY, 10, 10);
 }
 
 void shutdown()

@@ -1,23 +1,18 @@
-/*
- * Copyright 1993-2015 NVIDIA Corporation.  All rights reserved.
- *
- * Please refer to the NVIDIA end user license agreement (EULA) associated
- * with this source code for terms and conditions that govern your use of
- * this software. Any use, reproduction, disclosure, or distribution of
- * this software and related documentation outside the terms of the EULA
- * is strictly prohibited.
- *
- */
-
-/**
- * CUDA Kernel Device code
- *
- * Computes the vector addition of A and B into C. The 3 vectors have the same
- * number of elements numElements.
- */
-
 extern "C" __global__ void
-main(unsigned char *img, int width, int height)
+kernel(unsigned char *img, int width, int height)
 {
-    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    float u = x / (float) width;
+    float v = y / (float) height;
+
+    if ((x < width) && (y < height))
+    {
+        // write output color
+        int idx = (y * width + x) * 4;
+        img[idx+0] = u * 255;
+        img[idx+1] = v * 255;
+        img[idx+2] = 0;
+        img[idx+3] = 255;
+    }
 }
