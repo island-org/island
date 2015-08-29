@@ -2,6 +2,7 @@
 #include "sketch2d.h"
 
 #include "CudaApi.h"
+#include "Remotery.h"
 
 CUdeviceptr d_img_content;
 CUfunction kernel_addr;
@@ -9,6 +10,8 @@ PImage img;
 unsigned char* img_content;
 size_t item_size;
 CUdeviceptr d_iResolution, d_iGlobalTime, d_iMouse;
+
+Remotery *rmt;
 
 void setupResource()
 {
@@ -21,6 +24,10 @@ void setupResource()
 
 void setup()
 {
+    if (RMT_ERROR_NONE != rmt_CreateGlobalInstance(&rmt)) {
+        //return -1;
+    }
+
     glfwSetWindowTitle(window, "CUDA ShaderToy");
 
     checkCudaErrors(cuInit(0));
@@ -34,48 +41,75 @@ void setup()
     checkCudaErrors(cuModuleGetGlobal(&d_iGlobalTime, &bytes, module, "iGlobalTime"));
     checkCudaErrors(cuModuleGetGlobal(&d_iMouse, &bytes, module, "iMouse"));
 
+    rmtCUDABind bind;
+    bind.context = 0;
+    bind.CtxSetCurrent = &cuCtxSetCurrent;
+    bind.CtxGetCurrent = &cuCtxGetCurrent;
+    bind.EventCreate = &cuEventCreate;
+    bind.EventDestroy = &cuEventDestroy;
+    bind.EventRecord = &cuEventRecord;
+    bind.EventQuery = &cuEventQuery;
+    bind.EventElapsedTime = &cuEventElapsedTime;
+    rmt_BindCUDA(&bind);
+
+    rmt_BindOpenGL();
+
     setupResource();
 }
 
 void draw()
 {
-    if (isResized())
+    rmt_LogText("start profiling");
+
+    rmt_BeginCUDASample(main, 0);
     {
-        deleteImage(img);
-        free(img_content);
-        checkCudaErrors(cuMemFree(d_img_content));
-        setupResource();
+        if (isResized())
+        {
+            deleteImage(img);
+            free(img_content);
+            checkCudaErrors(cuMemFree(d_img_content));
+            setupResource();
+        }
+        // Launch the Vector Add CUDA Kernel
+        int threadsPerBlock = 256;
+        int blocksPerGrid = (img.width * img.height + threadsPerBlock - 1) / threadsPerBlock;
+        //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
+        dim3 blockDim = { 32, 32, 1 };
+        dim3 gridDim = { width / blockDim.x, height / blockDim.y, 1 };
+
+        float3 iResolution = { width, height, 1 };
+        float iGlobalTime = glfwGetTime();
+        float4 iMouse = { mouseX, mouseY, mouseX, mouseY };
+        checkCudaErrors(cuMemcpyHtoD(d_iResolution, &iResolution, sizeof iResolution));
+        checkCudaErrors(cuMemcpyHtoD(d_iGlobalTime, &iGlobalTime, sizeof iGlobalTime));
+        checkCudaErrors(cuMemcpyHtoD(d_iMouse, &iMouse, sizeof iMouse));
+
+        void *arr[] = { (void *)&d_img_content };
+        checkCudaErrors(cuLaunchKernel(kernel_addr,
+            gridDim.x, gridDim.y, gridDim.z, /* grid dim */
+            blockDim.x, blockDim.y, blockDim.z, /* block dim */
+            0, 0, /* shared mem, stream */
+            &arr[0], /* arguments */
+            0));
+        checkCudaErrors(cuCtxSynchronize());
+
+        checkCudaErrors(cuMemcpyDtoH(img_content, d_img_content, item_size));
     }
-    // Launch the Vector Add CUDA Kernel
-    int threadsPerBlock = 256;
-    int blocksPerGrid = (img.width * img.height + threadsPerBlock - 1) / threadsPerBlock;
-    //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
-    dim3 blockDim = { 32, 32, 1 };
-    dim3 gridDim = { width / blockDim.x, height / blockDim.y, 1 };
+    rmt_EndCUDASample(0);
 
-    float3 iResolution = { width, height, 1 };
-    float iGlobalTime = glfwGetTime();
-    float4 iMouse = { mouseX, mouseY, mouseX, mouseY };
-    checkCudaErrors(cuMemcpyHtoD(d_iResolution, &iResolution, sizeof iResolution));
-    checkCudaErrors(cuMemcpyHtoD(d_iGlobalTime, &iGlobalTime, sizeof iGlobalTime));
-    checkCudaErrors(cuMemcpyHtoD(d_iMouse, &iMouse, sizeof iMouse));
+    rmt_BeginOpenGLSample(main);
+    {
+        updateImage(img, img_content);
+        image(img, 0, 0, width, height);
+    }
+    rmt_EndOpenGLSample();
 
-    void *arr[] = { (void *)&d_img_content };
-    checkCudaErrors(cuLaunchKernel(kernel_addr,
-        gridDim.x, gridDim.y, gridDim.z, /* grid dim */
-        blockDim.x, blockDim.y, blockDim.z, /* block dim */
-        0, 0, /* shared mem, stream */
-        &arr[0], /* arguments */
-        0));
-    checkCudaErrors(cuCtxSynchronize());
+    rmt_UpdateOpenGLFrame();
 
-    checkCudaErrors(cuMemcpyDtoH(img_content, d_img_content, item_size));
-
-    updateImage(img, img_content);
-    image(img, 0, 0, width, height);
+    rmt_LogText("end profiling");
 }
 
-void shutdown()
+void teardown()
 {
     // Free device global memory
     checkCudaErrors(cuMemFree(d_img_content));
@@ -83,5 +117,6 @@ void shutdown()
 
     free(img_content);
 
-    printf("Done\n");
+    rmt_UnbindOpenGL();
+    rmt_DestroyGlobalInstance(rmt);
 }

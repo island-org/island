@@ -2,6 +2,8 @@
 
 local action = _ACTION or ""
 
+local CUDA_PATH = os.getenv("CUDA_PATH");
+
 solution "island"
     location ("_project")
     configurations { "Debug", "Release" }
@@ -112,6 +114,22 @@ solution "island"
             "3rdparty/blendish/blendish_lib.cpp" 
         }
 
+    project "Remotery"
+        files { 
+            "3rdparty/Remotery/lib/*",
+        }
+        defines {
+            "RMT_USE_OPENGL",
+        }
+        if CUDA_PATH ~= nil then
+            includedirs { 
+                path.join("$(CUDA_PATH)", "include"),
+            }
+            defines {
+                "RMT_USE_CUDA",
+            }
+        end
+
     project "soloud"
         language "C++"
         includedirs {
@@ -147,7 +165,6 @@ solution "island"
 
     function create_example_project( example_path )
         leaf_name = string.sub(example_path, string.len("examples/") + 1);
-        local needcuda = string.find(leaf_name, "cuda");
 
         project (leaf_name)
             kind "ConsoleApp"
@@ -174,6 +191,7 @@ solution "island"
                 "3rdparty/AntTweakBar/include",
                 "3rdparty/blendish",
                 "3rdparty/soloud/include",
+                "3rdparty/Remotery/lib",
             }
 
             libdirs {
@@ -192,6 +210,7 @@ solution "island"
                     "AntTweakBar-d",
                     "blendish-d",
                     -- "soloud-d",
+                    "Remotery-d",
                 }
 
             configuration "Release"
@@ -205,6 +224,7 @@ solution "island"
                     "AntTweakBar",
                     "blendish",
                     -- "soloud",
+                    "Remotery",
                 }
 
             configuration "windows"
@@ -212,8 +232,7 @@ solution "island"
                     "OpenGL32",
                 }
 
-            if needcuda then
-                local CUDA_PATH = os.getenv("CUDA_PATH");
+            if CUDA_PATH ~= nil then
                 includedirs { 
                     path.join("$(CUDA_PATH)", "include"),
                 }
