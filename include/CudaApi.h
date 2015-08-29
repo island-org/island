@@ -72,7 +72,7 @@ void compileFileToPTX(const char *filename, int argc, const char **argv,
     nvrtcProgram prog;
     checkCudaRtcErrors(nvrtcCreateProgram(&prog, memBlock,
         filename, 0, NULL, NULL));
-    checkCudaRtcErrors(nvrtcCompileProgram(prog, argc, argv));
+    nvrtcResult result = nvrtcCompileProgram(prog, argc, argv);
 
     // dump log
     size_t logSize;
@@ -117,7 +117,7 @@ CUmodule loadPTX(char *ptx)
     return module;
 }
 
-CUfunction getCompiledKernel(const char* kernel_file, const char* entry_name)
+CUmodule createModuleFromFile(const char* kernel_file)
 {
     char* ptx;
     size_t ptxSize;
@@ -125,10 +125,7 @@ CUfunction getCompiledKernel(const char* kernel_file, const char* entry_name)
     compileFileToPTX(kernel_file, 0, NULL, &ptx, &ptxSize);
     CUmodule module = loadPTX(ptx);
 
-    CUfunction kernel_addr;
-    checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, entry_name));
-
-    return kernel_addr;
+    return module;
 }
 
 // Error Code string definitions here

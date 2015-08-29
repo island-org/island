@@ -8,6 +8,7 @@ CUfunction kernel_addr;
 PImage img;
 unsigned char* img_content;
 size_t item_size;
+CUdeviceptr d_iResolution, d_iGlobalTime, d_iMouse;
 
 void setupResource()
 {
@@ -20,10 +21,18 @@ void setupResource()
 
 void setup()
 {
+    glfwSetWindowTitle(window, "CUDA ShaderToy");
+
     checkCudaErrors(cuInit(0));
 
-    char* kernel_file = "../examples/09-cuda-shadertoy/random.cu";
-    kernel_addr = getCompiledKernel(kernel_file, "kernel");
+    CUmodule module = createModuleFromFile("../examples/09-cuda-shadertoy/random.cu");
+    checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "cuda_main"));
+
+    // TODO: take care of bytes
+    size_t bytes;
+    checkCudaErrors(cuModuleGetGlobal(&d_iResolution, &bytes, module, "iResolution"));
+    checkCudaErrors(cuModuleGetGlobal(&d_iGlobalTime, &bytes, module, "iGlobalTime"));
+    checkCudaErrors(cuModuleGetGlobal(&d_iMouse, &bytes, module, "iMouse"));
 
     setupResource();
 }
@@ -41,10 +50,17 @@ void draw()
     int threadsPerBlock = 256;
     int blocksPerGrid = (img.width * img.height + threadsPerBlock - 1) / threadsPerBlock;
     //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
-    dim3 blockDim = { 16, 16, 1 };
+    dim3 blockDim = { 32, 32, 1 };
     dim3 gridDim = { width / blockDim.x, height / blockDim.y, 1 };
 
-    void *arr[] = { (void *)&d_img_content, (void *)&img.width, (void *)&img.height };
+    float3 iResolution = { width, height, 1 };
+    float iGlobalTime = glfwGetTime();
+    float4 iMouse = { mouseX, mouseY, mouseX, mouseY };
+    checkCudaErrors(cuMemcpyHtoD(d_iResolution, &iResolution, sizeof iResolution));
+    checkCudaErrors(cuMemcpyHtoD(d_iGlobalTime, &iGlobalTime, sizeof iGlobalTime));
+    checkCudaErrors(cuMemcpyHtoD(d_iMouse, &iMouse, sizeof iMouse));
+
+    void *arr[] = { (void *)&d_img_content };
     checkCudaErrors(cuLaunchKernel(kernel_addr,
         gridDim.x, gridDim.y, gridDim.z, /* grid dim */
         blockDim.x, blockDim.y, blockDim.z, /* block dim */
