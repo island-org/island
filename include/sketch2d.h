@@ -21,7 +21,7 @@ extern GLFWwindow* window;
 //
 void setup();
 void draw();
-void shutdown();
+void teardown();
 
 extern GLboolean isResized();
 
@@ -722,7 +722,7 @@ int main()
         frameCount++;
     }
 
-    shutdown();
+    teardown();
 
     nvgDeleteGL3(vg);
     glfwTerminate();

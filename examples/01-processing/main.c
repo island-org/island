@@ -33,6 +33,6 @@ void draw()
     text("test everything here", width/2, height/2);
 }
 
-void shutdown()
+void teardown()
 {
 }

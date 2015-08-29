@@ -56,7 +56,7 @@ void draw()
     lastMillis = millis();
 }
 
-void shutdown()
+void teardown()
 {
     free(tilemap);
 }
@@ -86,6 +86,18 @@ void STBTE_DRAW_RECT(int x0, int y0, int x1, int y1, unsigned int clr)
 void STBTE_DRAW_TILE(int x0, int y0,
                      unsigned short id, int highlight, float *data)
 {
-    Rect src = {id * SPRITE_SHEET_GRID, 0, spriteSheet.width, spriteSheet.height};    Rect dst = {x0, y0, SPRITE_SHEET_GRID, SPRITE_SHEET_GRID};
-    if (highlight == STBTE_drawmode_emphasize)    {    }    if (data == NULL)    {    }    imageEx(spriteSheet, src, dst);
+    Rect src = {id * SPRITE_SHEET_GRID, 0, spriteSheet.width, spriteSheet.height};
+    Rect dst = {x0, y0, SPRITE_SHEET_GRID, SPRITE_SHEET_GRID};
+
+    if (highlight == STBTE_drawmode_emphasize)
+    {
+
+    }
+
+    if (data == NULL)
+    {
+
+    }
+
+    imageEx(spriteSheet, src, dst);
 }

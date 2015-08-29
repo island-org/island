@@ -53,7 +53,7 @@ void draw()
     branch(120);
 }
 
-void shutdown()
+void teardown()
 {
 
 }

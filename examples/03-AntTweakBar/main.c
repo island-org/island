@@ -65,7 +65,7 @@ void draw()
     TwDraw();
 }
 
-void shutdown()
+void teardown()
 {
     TwTerminate();
 }

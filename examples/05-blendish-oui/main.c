@@ -610,7 +610,7 @@ void draw()
     }
 }
 
-void shutdown()
+void teardown()
 {
     uiDestroyContext(uictx);
 }

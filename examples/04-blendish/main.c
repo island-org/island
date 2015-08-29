@@ -257,6 +257,6 @@ void draw()
     drawBlendish(vg, width, height);
 }
 
-void shutdown()
+void teardown()
 {
 }
