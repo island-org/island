@@ -3,7 +3,7 @@ island
 
 island is a light-weight and low-level creative coding framework.
 
-To update 3rdparty submodules, use `git pull --recurse-submodules`, then `git submodule update --recursive`.
+To update 3rdparty submodules, use `git submodule update --init --recursive`.
 
 To generate solutions, you would need [premake](http://premake.github.io/download.html).
 
