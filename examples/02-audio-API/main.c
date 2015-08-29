@@ -1,12 +1,16 @@
 #define SKETCH_2D_IMPLEMENTATION
 #include "sketch2d.h"
 
+#define PAUDIO_IMPLEMENTATION
+#include "PAudio.h"
+
 const char sentence[] = "Hello world, Island C API is cool! Hit the keyboard!";
 PAudio speech, keySound;
 PFont font;
 
 void setup()
 {
+    setupPAudio();
     speech = loadSpeech(sentence);
     playAudio(speech);
 
@@ -42,4 +46,5 @@ void draw()
 void shutdown()
 {
     destroyAudio(speech);
+    shutdownPAudio();
 }

@@ -155,6 +155,7 @@ solution "island"
                 "examples/" .. leaf_name .. "/*.h",
                 "examples/" .. leaf_name .. "/*.lua",
                 "examples/" .. leaf_name .. "/*.c",
+                "examples/" .. leaf_name .. "/*.cu",
             }
             defines { 
                 "GLEW_STATIC",
@@ -185,12 +186,12 @@ solution "island"
                     "glfw-d",
                     "glew-d",
                     "nanovg-d",
-                    "libuv-d",
+                    -- "libuv-d",
                     "lua-d",
                     "stb-d",
                     "AntTweakBar-d",
                     "blendish-d",
-                    "soloud-d",
+                    -- "soloud-d",
                 }
 
             configuration "Release"
@@ -198,12 +199,12 @@ solution "island"
                     "glfw",
                     "glew",
                     "nanovg",
-                    "libuv",
+                    -- "libuv",
                     "lua",
                     "stb",
                     "AntTweakBar",
                     "blendish",
-                    "soloud",
+                    -- "soloud",
                 }
 
             configuration "windows"

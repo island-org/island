@@ -10,8 +10,6 @@
 #include <stdio.h>
 #include <stb/stb_vec.h>
 
-#include "PAudio.h"
-
 #ifdef _MSC_VER
 #pragma warning(disable: 4244)  // conversion from 'float' to 'int', possible loss of data
 #pragma warning(disable: 4305)  // 'initializing' : truncation from 'double' to 'float'
@@ -204,9 +202,6 @@ void noStroke();
 #include <nanovg_gl.h>
 #include <stb/stb_image_write.h>
 #include <stb/stb_perlin.h>
-
-#define PAUDIO_IMPLEMENTATION
-#include "PAudio.h"
 
 float mouseX, mouseY;
 float pmouseX, pmouseY;
@@ -612,7 +607,6 @@ int main()
     displayWidth = vidMode->width;
     displayHeight = vidMode->height;
 
-    setupSoloud();
     setup();
 
     while (!glfwWindowShouldClose(window))
@@ -697,7 +691,6 @@ int main()
     }
 
     shutdown();
-    shutdownSoloud();
 
     nvgDeleteGL3(vg);
     glfwTerminate();
