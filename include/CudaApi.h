@@ -25,6 +25,8 @@
 
 const char *getCudaDrvErrorString(CUresult error_id);
 
+// TODO: improve error return
+// V() and V_RETURN
 #define checkCudaRtcErrors(err)  __checkCudaRtcErrors (err, __FILE__, __LINE__)
 
 // These are the inline versions for all of the SDK helper functions
@@ -34,7 +36,6 @@ static void __checkCudaRtcErrors(nvrtcResult err, const char *file, const int li
     {
         fprintf(stderr, "checkCudaRtcErrors() error = %04d \"%s\" from file <%s>, line %i.\n",
             err, nvrtcGetErrorString(err), file, line);
-        exit(EXIT_FAILURE);
     }
 }
 
@@ -51,7 +52,7 @@ static void __checkCudaErrors(CUresult err, const char *file, const int line)
     }
 }
 
-void compileFileToPTX(const char *filename, int argc, const char **argv,
+nvrtcResult compileFileToPTX(const char *filename, int argc, const char **argv,
     char **ptxResult, size_t *ptxResultSize)
 {
     FILE* fp = fopen(filename, "rb");
@@ -83,7 +84,8 @@ void compileFileToPTX(const char *filename, int argc, const char **argv,
     log[logSize] = '\x0';
     if (logSize > 1)
     {
-        printf("\n compilation log-- - \n %s \n end log ---\n", log);
+        printf("\n------------------\n"
+            "%s\n------------------%\n", log);
     }
     free(log);
 
@@ -95,30 +97,32 @@ void compileFileToPTX(const char *filename, int argc, const char **argv,
     checkCudaRtcErrors(nvrtcDestroyProgram(&prog));
     *ptxResult = ptx;
     *ptxResultSize = ptxSize;
+
+    return result;
 }
 
 CUcontext cuContext = NULL;
 
 CUmodule loadPTX(char *ptx)
 {
-    CUmodule module;
-    int major = 0, minor = 0;
-    char deviceName[256];
-
-    // Picks the best CUDA device available
-    int cuDevice = 0;
-
-    // get compute capabilities and the devicename
-    checkCudaErrors(cuDeviceComputeCapability(&major, &minor, cuDevice));
-    checkCudaErrors(cuDeviceGetName(deviceName, 256, cuDevice));
-    printf("> GPU Device has SM %d.%d compute capability\n", major, minor);
-
-    checkCudaErrors(cuDeviceGet(&cuDevice, 0));
     if (cuContext == NULL)
     {
+        int major = 0, minor = 0;
+        char deviceName[256];
+
+        // Picks the best CUDA device available
+        int cuDevice = 0;
+
+        // get compute capabilities and the devicename
+        checkCudaErrors(cuDeviceComputeCapability(&major, &minor, cuDevice));
+        checkCudaErrors(cuDeviceGetName(deviceName, 256, cuDevice));
+        printf("> GPU Device has SM %d.%d compute capability\n", major, minor);
+
+        checkCudaErrors(cuDeviceGet(&cuDevice, 0));
         checkCudaErrors(cuCtxCreate(&cuContext, 0, cuDevice));
     }
 
+    CUmodule module;
     checkCudaErrors(cuModuleLoadDataEx(&module, ptx, 0, 0, 0));
 
     return module;
@@ -128,8 +132,12 @@ CUmodule createModuleFromFile(const char* kernel_file)
 {
     char* ptx;
     size_t ptxSize;
-    // TODO: cache the PTX
-    compileFileToPTX(kernel_file, 0, NULL, &ptx, &ptxSize);
+
+    nvrtcResult result = compileFileToPTX(kernel_file, 0, NULL, &ptx, &ptxSize);
+    if (result != NVRTC_SUCCESS)
+    {
+        return NULL;
+    }
     CUmodule module = loadPTX(ptx);
 
     return module;

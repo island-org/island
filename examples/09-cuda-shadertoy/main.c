@@ -22,8 +22,12 @@ CUdevice cuDevice = 0;
 
 void setupModuleResource(const char* kernelFileName)
 {
-    cuModuleUnload(module);
-    module = createModuleFromFile(kernelFileName);
+    CUmodule newModule = createModuleFromFile(kernelFileName);
+    if (newModule != NULL)
+    {
+        cuModuleUnload(module);
+        module = newModule;
+    }
     checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "mainImage"));
 
     // TODO: take care of bytes
@@ -42,13 +46,11 @@ void on_fs_event_cb(uv_fs_event_t *handle, const char *filename, int events, int
     uv_fs_event_getpath(handle, path, &size);
     path[size] = '\0';
 
-    fprintf(stderr, "Change detected in %s: ", path);
+    printf("%s is ", filename ? filename : "");
     if (events & UV_RENAME)
-        fprintf(stderr, "renamed");
+        printf("renamed\n");
     if (events & UV_CHANGE)
-        fprintf(stderr, "changed");
-
-    fprintf(stderr, " %s\n", filename ? filename : "");
+        printf("changed\n");
 
     setupModuleResource(path);
 
