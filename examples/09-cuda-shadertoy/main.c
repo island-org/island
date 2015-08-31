@@ -4,6 +4,9 @@
 #include "CudaApi.h"
 #include "Remotery.h"
 
+#include "uv.h"
+uv_fs_event_t fs_event;
+
 CUfunction kernel_addr;
 PImage img;
 unsigned char* img_content;
@@ -13,10 +16,53 @@ CUdeviceptr d_img_content;
 CUdeviceptr d_fragColor;
 size_t d_fragColor_bytes;
 
+CUmodule module;
 Remotery *rmt;
+CUcontext cuContext;
+CUdevice cuDevice = 0;
 
-void setupResource()
+void setupModuleResource(const char* kernelFileName)
 {
+    cuModuleUnload(module);
+    module = createModuleFromFile(kernelFileName);
+    checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "mainImage"));
+
+    // TODO: take care of bytes
+    size_t bytes;
+    checkCudaErrors(cuModuleGetGlobal(&d_iResolution, &bytes, module, "iResolution"));
+    checkCudaErrors(cuModuleGetGlobal(&d_iGlobalTime, &bytes, module, "iGlobalTime"));
+    checkCudaErrors(cuModuleGetGlobal(&d_iMouse, &bytes, module, "iMouse"));
+    checkCudaErrors(cuModuleGetGlobal(&d_fragColor, &d_fragColor_bytes, module, "fragColor"));
+}
+
+void on_fs_event_cb(uv_fs_event_t *handle, const char *filename, int events, int status)
+{
+    char path[1024];
+    size_t size = 1023;
+    // Does not handle error if path is longer than 1023.
+    uv_fs_event_getpath(handle, path, &size);
+    path[size] = '\0';
+
+    fprintf(stderr, "Change detected in %s: ", path);
+    if (events & UV_RENAME)
+        fprintf(stderr, "renamed");
+    if (events & UV_CHANGE)
+        fprintf(stderr, "changed");
+
+    fprintf(stderr, " %s\n", filename ? filename : "");
+
+    setupModuleResource(path);
+
+    // TODO: so ugly
+    checkCudaErrors(cuMemcpyHtoD(d_fragColor, &d_img_content, d_fragColor_bytes));
+}
+
+void setupSizeResource()
+{
+    deleteImage(img);
+    free(img_content);
+    checkCudaErrors(cuMemFree(d_img_content));
+
     item_size = width * height * 4;
 
     img = createImage(width, height);
@@ -28,6 +74,7 @@ void setupResource()
 void setup()
 {
     checkCudaErrors(cuInit(0));
+    checkCudaErrors(cuDevicePrimaryCtxRetain(&cuContext, cuDevice));
 
     if (sketchArgc != 2)
     {
@@ -38,24 +85,19 @@ void setup()
     if (RMT_ERROR_NONE != rmt_CreateGlobalInstance(&rmt)) {
         //return -1;
     }
+    
+    int r = uv_fs_event_init(uv_default_loop(), &fs_event);
+    r = uv_fs_event_start(&fs_event, on_fs_event_cb, sketchArgv[1], 0);
 
     char title[256];
     sprintf(title, "CUDA ShaderToy - %s", sketchArgv[1]);
     glfwSetWindowTitle(window, title);
 
-
-    CUmodule module = createModuleFromFile(sketchArgv[1]);
-    checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "mainImage"));
-
-    // TODO: take care of bytes
-    size_t bytes;
-    checkCudaErrors(cuModuleGetGlobal(&d_iResolution, &bytes, module, "iResolution"));
-    checkCudaErrors(cuModuleGetGlobal(&d_iGlobalTime, &bytes, module, "iGlobalTime"));
-    checkCudaErrors(cuModuleGetGlobal(&d_iMouse, &bytes, module, "iMouse"));
-    checkCudaErrors(cuModuleGetGlobal(&d_fragColor, &d_fragColor_bytes, module, "fragColor"));
+    setupModuleResource(sketchArgv[1]);
+    setupSizeResource();
 
     rmtCUDABind bind;
-    bind.context = 0;
+    bind.context = &cuContext;
     bind.CtxSetCurrent = &cuCtxSetCurrent;
     bind.CtxGetCurrent = &cuCtxGetCurrent;
     bind.EventCreate = &cuEventCreate;
@@ -67,21 +109,19 @@ void setup()
 
     rmt_BindOpenGL();
 
-    setupResource();
 }
 
 void draw()
 {
     rmt_LogText("start profiling");
 
+    uv_run(uv_default_loop(), UV_RUN_NOWAIT);
+
     rmt_BeginCUDASample(main, 0);
     {
         if (isResized())
         {
-            deleteImage(img);
-            free(img_content);
-            checkCudaErrors(cuMemFree(d_img_content));
-            setupResource();
+            setupSizeResource();
         }
         // Launch the Vector Add CUDA Kernel
         int threadsPerBlock = 256;
@@ -131,4 +171,6 @@ void teardown()
 
     rmt_UnbindOpenGL();
     rmt_DestroyGlobalInstance(rmt);
+
+    cuDevicePrimaryCtxRelease(cuDevice);
 }

@@ -184,7 +184,7 @@ solution "island"
                 "3rdparty/glfw/include",
                 "3rdparty/glew",
                 "3rdparty/nanovg/src",
-                "3rdparty/libuv/src",
+                "3rdparty/libuv/include",
                 "3rdparty/lua/src",
                 "3rdparty/stb",
                 "3rdparty/AntTweakBar/include",
@@ -229,6 +229,9 @@ solution "island"
             configuration "windows"
                 links {
                     "OpenGL32",
+                    "Psapi",
+                    "Iphlpapi",
+                    "Userenv",
                 }
 
             if CUDA_PATH ~= nil then
