@@ -81,8 +81,10 @@ void compileFileToPTX(const char *filename, int argc, const char **argv,
     char *log = (char *)malloc(sizeof(char) * logSize + 1);
     checkCudaRtcErrors(nvrtcGetProgramLog(prog, log));
     log[logSize] = '\x0';
-
-    printf("\n compilation log-- - \n %s \n end log ---\n", log);
+    if (logSize > 1)
+    {
+        printf("\n compilation log-- - \n %s \n end log ---\n", log);
+    }
     free(log);
 
     // fetch PTX
@@ -95,10 +97,11 @@ void compileFileToPTX(const char *filename, int argc, const char **argv,
     *ptxResultSize = ptxSize;
 }
 
+CUcontext cuContext = NULL;
+
 CUmodule loadPTX(char *ptx)
 {
     CUmodule module;
-    CUcontext context;
     int major = 0, minor = 0;
     char deviceName[256];
 
@@ -111,7 +114,10 @@ CUmodule loadPTX(char *ptx)
     printf("> GPU Device has SM %d.%d compute capability\n", major, minor);
 
     checkCudaErrors(cuDeviceGet(&cuDevice, 0));
-    checkCudaErrors(cuCtxCreate(&context, 0, cuDevice));
+    if (cuContext == NULL)
+    {
+        checkCudaErrors(cuCtxCreate(&cuContext, 0, cuDevice));
+    }
 
     checkCudaErrors(cuModuleLoadDataEx(&module, ptx, 0, 0, 0));
 

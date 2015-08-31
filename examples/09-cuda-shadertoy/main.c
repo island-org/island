@@ -18,7 +18,6 @@ size_t d_fragColor_bytes;
 
 CUmodule module;
 Remotery *rmt;
-CUcontext cuContext;
 CUdevice cuDevice = 0;
 
 void setupModuleResource(const char* kernelFileName)
@@ -74,7 +73,6 @@ void setupSizeResource()
 void setup()
 {
     checkCudaErrors(cuInit(0));
-    checkCudaErrors(cuDevicePrimaryCtxRetain(&cuContext, cuDevice));
 
     if (sketchArgc != 2)
     {
