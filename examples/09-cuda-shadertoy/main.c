@@ -4,12 +4,14 @@
 #include "CudaApi.h"
 #include "Remotery.h"
 
-CUdeviceptr d_img_content;
 CUfunction kernel_addr;
 PImage img;
 unsigned char* img_content;
 size_t item_size;
 CUdeviceptr d_iResolution, d_iGlobalTime, d_iMouse;
+CUdeviceptr d_img_content;
+CUdeviceptr d_fragColor;
+size_t d_fragColor_bytes;
 
 Remotery *rmt;
 
@@ -20,6 +22,7 @@ void setupResource()
     img = createImage(width, height);
     img_content = (unsigned char*)malloc(item_size);
     checkCudaErrors(cuMemAlloc(&d_img_content, item_size));
+    checkCudaErrors(cuMemcpyHtoD(d_fragColor, &d_img_content, d_fragColor_bytes));
 }
 
 void setup()
@@ -49,6 +52,7 @@ void setup()
     checkCudaErrors(cuModuleGetGlobal(&d_iResolution, &bytes, module, "iResolution"));
     checkCudaErrors(cuModuleGetGlobal(&d_iGlobalTime, &bytes, module, "iGlobalTime"));
     checkCudaErrors(cuModuleGetGlobal(&d_iMouse, &bytes, module, "iMouse"));
+    checkCudaErrors(cuModuleGetGlobal(&d_fragColor, &d_fragColor_bytes, module, "fragColor"));
 
     rmtCUDABind bind;
     bind.context = 0;
@@ -93,12 +97,11 @@ void draw()
         checkCudaErrors(cuMemcpyHtoD(d_iGlobalTime, &iGlobalTime, sizeof iGlobalTime));
         checkCudaErrors(cuMemcpyHtoD(d_iMouse, &iMouse, sizeof iMouse));
 
-        void *arr[] = { (void *)&d_img_content };
         checkCudaErrors(cuLaunchKernel(kernel_addr,
             gridDim.x, gridDim.y, gridDim.z, /* grid dim */
             blockDim.x, blockDim.y, blockDim.z, /* block dim */
             0, 0, /* shared mem, stream */
-            &arr[0], /* arguments */
+            0, /* arguments */
             0));
         checkCudaErrors(cuCtxSynchronize());
 

@@ -1,6 +1,6 @@
-#include "shadertoy.cu"
+#include "shadertoy.cuh"
 
-extern "C" __global__ void mainImage(unsigned char* fragColor)
+extern "C" __global__ void mainImage()
 {
     float2 fragCoord = calcFragCoord();
     float u = fragCoord.x / iResolution.x;
@@ -8,10 +8,7 @@ extern "C" __global__ void mainImage(unsigned char* fragColor)
 
     if ((fragCoord.x < iResolution.x) && (fragCoord.y < iResolution.y))
     {
-        int idx = (fragCoord.y * iResolution.x + fragCoord.x) * 4;
-        fragColor[idx+0] = u * 255;
-        fragColor[idx+1] = v * 255;
-        fragColor[idx+2] = 122 + 122*sin(iGlobalTime);
-        fragColor[idx+3] = 255;
+        uchar4* fragColor = calcFragColor(fragCoord);
+        *fragColor = make_uchar4(u * 255, v * 255, 122 + 122 * sin(iGlobalTime), 255);
     }
 }

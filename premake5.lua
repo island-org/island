@@ -171,8 +171,7 @@ solution "island"
             files { 
                 "examples/" .. leaf_name .. "/*.h",
                 "examples/" .. leaf_name .. "/*.lua",
-                "examples/" .. leaf_name .. "/*.c",
-                "examples/" .. leaf_name .. "/*.cu",
+                "examples/" .. leaf_name .. "/*.c*",
             }
             defines { 
                 "GLEW_STATIC",
