@@ -23,6 +23,8 @@ void setup();
 void draw();
 void teardown();
 
+extern int sketchArgc;
+extern char **sketchArgv;
 extern GLboolean isResized();
 
 //
@@ -584,8 +586,12 @@ GLboolean isResized()
     return ret;
 }
 
-int main()
+int sketchArgc;
+char **sketchArgv;
+int main(int argc, char *argv[])
 {
+    sketchArgc = argc;
+    sketchArgv = argv;
     const GLFWvidmode* vidMode;
 
     if (!glfwInit())

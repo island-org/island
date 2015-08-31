@@ -204,12 +204,12 @@ solution "island"
                     "glfw-d",
                     "glew-d",
                     "nanovg-d",
-                    -- "libuv-d",
+                    "libuv-d",
                     "lua-d",
                     "stb-d",
                     "AntTweakBar-d",
                     "blendish-d",
-                    -- "soloud-d",
+                    "soloud-d",
                     "Remotery-d",
                 }
 
@@ -218,12 +218,12 @@ solution "island"
                     "glfw",
                     "glew",
                     "nanovg",
-                    -- "libuv",
+                    "libuv",
                     "lua",
                     "stb",
                     "AntTweakBar",
                     "blendish",
-                    -- "soloud",
+                    "soloud",
                     "Remotery",
                 }
 

@@ -24,15 +24,23 @@ void setupResource()
 
 void setup()
 {
+    if (sketchArgc != 2)
+    {
+        printf("Usage: %s <cuda_toy.cu>", sketchArgv[0]);
+        quit();
+        return;
+    }
     if (RMT_ERROR_NONE != rmt_CreateGlobalInstance(&rmt)) {
         //return -1;
     }
 
-    glfwSetWindowTitle(window, "CUDA ShaderToy");
+    char title[256];
+    sprintf(title, "CUDA ShaderToy - %s", sketchArgv[1]);
+    glfwSetWindowTitle(window, title);
 
     checkCudaErrors(cuInit(0));
 
-    CUmodule module = createModuleFromFile("../examples/09-cuda-shadertoy/random.cu");
+    CUmodule module = createModuleFromFile(sketchArgv[1]);
     checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "mainImage"));
 
     // TODO: take care of bytes

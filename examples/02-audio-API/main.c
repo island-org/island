@@ -46,5 +46,5 @@ void draw()
 void shutdown()
 {
     destroyAudio(speech);
-    shutdownPAudio();
+    teardownPAudio();
 }

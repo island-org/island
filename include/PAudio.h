@@ -32,7 +32,7 @@ typedef struct
 extern Soloud* soloud;
 
 void setupPAudio();
-void shutdownPAudio();
+void teardownPAudio();
 
 PAudio loadSpeech(const char* speech);
 PAudio loadAudio(const char* filename);
@@ -62,7 +62,7 @@ void setupPAudio()
     }
 }
 
-void shutdownPAudio()
+void teardownPAudio()
 {
     if (soloud != NULL)
     {
