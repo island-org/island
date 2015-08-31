@@ -24,6 +24,8 @@ void setupResource()
 
 void setup()
 {
+    checkCudaErrors(cuInit(0));
+
     if (sketchArgc != 2)
     {
         printf("Usage: %s <cuda_toy.cu>", sketchArgv[0]);
@@ -38,7 +40,6 @@ void setup()
     sprintf(title, "CUDA ShaderToy - %s", sketchArgv[1]);
     glfwSetWindowTitle(window, title);
 
-    checkCudaErrors(cuInit(0));
 
     CUmodule module = createModuleFromFile(sketchArgv[1]);
     checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "mainImage"));
