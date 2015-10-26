@@ -3,9 +3,15 @@ island
 
 island is a light-weight and low-level creative coding framework.
 
-To update 3rdparty submodules, use `git submodule update --init --recursive`.
+Getting Started
+--------
+Clone the repository with `git clone --recurse-submodules https://github.com/island-org/island.git` in order to pull in the 3rdparty repos.
+
+You can also pull in the 3rdparty repos after cloning the repository with `git submodule update --init --recursive`.
 
 To generate solutions, you would need [premake](http://premake.github.io/download.html).
+
+On Windows, you can use the included `premake5.exe` with `premake5 vs2013`.
 
 Examples
 --------
