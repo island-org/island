@@ -1,6 +1,8 @@
 #define SKETCH_2D_IMPLEMENTATION
 #include "sketch2d.h"
 
+#include <AntTweakBar.h>
+
 #include "CudaApi.h"
 #include "Remotery.h"
 
@@ -19,6 +21,14 @@ size_t d_fragColor_bytes;
 CUmodule module;
 Remotery *rmt;
 CUdevice cuDevice = 0;
+
+GLFWwindow* barWindow;
+TwBar* bar;
+
+void WindowSizeCB(GLFWwindow* window, int width, int height)
+{
+    TwWindowSize(width, height);
+}
 
 void setupModuleResource(const char* kernelFileName)
 {
@@ -72,8 +82,31 @@ void setupSizeResource()
     checkCudaErrors(cuMemcpyHtoD(d_fragColor, &d_img_content, d_fragColor_bytes));
 }
 
+void setupAntTweakBar()
+{
+    TwInit(TW_OPENGL_CORE, NULL);
+#if 0
+    barWindow = glfwCreateWindow(400, 400, "Param", NULL, NULL);
+    TwSetCurrentWindow(barWindow);
+#endif
+    bar = TwNewBar("Param");
+    WindowSizeCB(window, width, height);
+
+    glfwSetWindowSizeCallback(window, WindowSizeCB);
+    glfwSetMouseButtonCallback(window, TwEventMouseButtonGLFW);
+    glfwSetCursorPosCallback(window, TwEvenCursorPosGLFW);
+    glfwSetScrollCallback(window, TwEventScrollGLFW);
+    glfwSetKeyCallback(window, TwEventKeyGLFW);
+    glfwSetCharCallback(window, TwEventCharGLFW);
+
+    TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' "); // Message added to the help bar.
+
+}
+
 void setup()
 {
+    setupAntTweakBar();
+
     checkCudaErrors(cuInit(0));
 
     if (sketchArgc != 2)
@@ -97,7 +130,7 @@ void setup()
     setupSizeResource();
 
     rmtCUDABind bind;
-    bind.context = &cuContext;
+    bind.context = cuContext;
     bind.CtxSetCurrent = &cuCtxSetCurrent;
     bind.CtxGetCurrent = &cuCtxGetCurrent;
     bind.EventCreate = &cuEventCreate;
@@ -105,19 +138,21 @@ void setup()
     bind.EventRecord = &cuEventRecord;
     bind.EventQuery = &cuEventQuery;
     bind.EventElapsedTime = &cuEventElapsedTime;
-    //rmt_BindCUDA(&bind);
+    rmt_BindCUDA(&bind);
 
-    //rmt_BindOpenGL();
-
+    rmt_BindOpenGL();
 }
 
 void draw()
 {
-    //rmt_LogText("start profiling");
+    rmt_LogText("start profiling");
 
+    //rmt_BeginCPUSample(uv_run);
     uv_run(uv_default_loop(), UV_RUN_NOWAIT);
+    //rmt_EndCPUSample();
 
-    //rmt_BeginCUDASample(main, 0);
+    CUstream stream0 = 0;
+    rmt_BeginCUDASample(main, stream0);
     {
         if (isResized())
         {
@@ -133,44 +168,55 @@ void draw()
         float3 iResolution = { width, height, 1 };
         float iGlobalTime = glfwGetTime();
         float4 iMouse = { mouseX, mouseY, mouseX, mouseY };
+        rmt_BeginCUDASample(cuMemcpyHtoD, stream0);
         checkCudaErrors(cuMemcpyHtoD(d_iResolution, &iResolution, sizeof iResolution));
         checkCudaErrors(cuMemcpyHtoD(d_iGlobalTime, &iGlobalTime, sizeof iGlobalTime));
         checkCudaErrors(cuMemcpyHtoD(d_iMouse, &iMouse, sizeof iMouse));
+        rmt_EndCUDASample(stream0);
 
+        rmt_BeginCUDASample(cuLaunchKernel, stream0);
         checkCudaErrors(cuLaunchKernel(kernel_addr,
             gridDim.x, gridDim.y, gridDim.z, /* grid dim */
             blockDim.x, blockDim.y, blockDim.z, /* block dim */
             0, 0, /* shared mem, stream */
             0, /* arguments */
             0));
+        rmt_EndCUDASample(stream0);
+        rmt_BeginCUDASample(cuCtxSynchronize, stream0);
         checkCudaErrors(cuCtxSynchronize());
-
+        rmt_EndCUDASample(stream0);
+        
+        rmt_BeginCUDASample(cuMemcpyDtoH, stream0);
         checkCudaErrors(cuMemcpyDtoH(img_content, d_img_content, item_size));
+        rmt_EndCUDASample(stream0);
     }
-    //rmt_EndCUDASample(0);
+    rmt_EndCUDASample(stream0);
 
-    //rmt_BeginOpenGLSample(main);
+    rmt_BeginOpenGLSample(main);
     {
+        background(color(0,0,0));
         updateImage(img, img_content);
         image(img, 0, 0, width, height);
+
+        TwDraw();
     }
-    //rmt_EndOpenGLSample();
+    rmt_EndOpenGLSample();
 
-    //rmt_UpdateOpenGLFrame();
-
-    //rmt_LogText("end profiling");
+    rmt_LogText("end profiling");
 }
 
 void teardown()
 {
+    TwTerminate();
+
     // Free device global memory
     checkCudaErrors(cuMemFree(d_img_content));
     //cuProfilerStop();
 
     free(img_content);
 
-    //rmt_UnbindOpenGL();
-    //rmt_DestroyGlobalInstance(rmt);
+    rmt_UnbindOpenGL();
+    rmt_DestroyGlobalInstance(rmt);
 
     cuDevicePrimaryCtxRelease(cuDevice);
 

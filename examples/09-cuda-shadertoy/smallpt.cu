@@ -87,6 +87,8 @@ __device__ static float getrandom(unsigned int *seed0, unsigned int *seed1) {
     return (res.f - 2.f) / 2.f;
 }
 
+inline __device__ __host__ float lerp(float a, float b, float t){return a + t*(b - a);}
+
 // radiance function, the meat of path tracing 
 // solves the rendering equation: 
 // outgoing radiance (at a point) = emitted radiance + reflected radiance
@@ -158,8 +160,8 @@ extern "C" __global__ void mainImage()
     unsigned int x = (unsigned int)fragCoord.x;
     unsigned int y = (unsigned int)(iResolution.y - 1 - fragCoord.y);
 
-    unsigned int s1 = x;  // seeds for random number generator
-    unsigned int s2 = y;
+    unsigned int s1 = x + iGlobalTime * 100;  // seeds for random number generator
+    unsigned int s2 = y + iGlobalTime * 100;
 
     // generate ray directed at lower left corner of the screen
     // compute directions for all other rays by adding cx and cy increments in x and y direction
@@ -174,9 +176,9 @@ extern "C" __global__ void mainImage()
 #endif
     float3 cx = make_float3(iResolution.x * .5135 / iResolution.y, 0.0f, 0.0f); // ray direction offset in x direction
     float3 cy = normalize(cross(cx, cam.dir)) * .5135; // ray direction offset in y direction (.5135 is field of view angle)
-    float3 r; // r is final pixel color       
+    float3 clr; // r is final pixel color       
 
-    r = make_float3(0.0f, 0.0f, 0.0f); // reset r to zero for every pixel 
+    clr = make_float3(0.0f, 0.0f, 0.0f); // reset clr to zero for every pixel 
 
     uchar4* rgba = calcFragColor(fragCoord);
 
@@ -187,9 +189,13 @@ extern "C" __global__ void mainImage()
 
         // create primary ray, add incoming radiance to pixelcolor
         Ray ray(cam.orig + d * 40, normalize(d));
-        r = r + radiance(ray, &s1, &s2)*(1. / samps);
+        clr = clr + radiance(ray, &s1, &s2)*(1. / samps);
     }       // Camera rays are pushed ^^^^^ forward to start in interior 
 
-    // write rgb value of pixel to image buffer on the GPU, clamp value to [0.0f, 1.0f] range
-    *rgba = make_uchar4(clamp(r.x, 0.0f, 1.0f) * 255, clamp(r.y, 0.0f, 1.0f) * 255, clamp(r.z, 0.0f, 1.0f) * 255, 255);
+    // TODO: optimize
+    float learningRate = 0.3f;
+    float r = lerp(rgba->x / 255.0f, clamp(clr.x, 0.0f, 1.0f), learningRate);
+    float g = lerp(rgba->y / 255.0f, clamp(clr.y, 0.0f, 1.0f), learningRate);
+    float b = lerp(rgba->z / 255.0f, clamp(clr.z, 0.0f, 1.0f), learningRate);
+    *rgba = make_uchar4(r * 255, g * 255, b * 255, 255);
 }

@@ -176,6 +176,7 @@ solution "island"
             defines { 
                 "GLEW_STATIC",
                 "NANOVG_GL3_IMPLEMENTATION",
+                "RMT_USE_OPENGL",
             }
 
             includedirs { 
@@ -240,8 +241,8 @@ solution "island"
                 }
                 links {
                     "cuda.lib",
-                    "cudart.lib"
-                    "nvrtc.lib"
+                    "cudart.lib",
+                    "nvrtc.lib",
                 }
                 configuration {"x32", "windows"}
                     libdirs {
@@ -251,6 +252,9 @@ solution "island"
                     libdirs {
                         path.join("$(CUDA_PATH)", "lib/x64"),
                     }
+                defines {
+                    "RMT_USE_CUDA",
+                }
             end
     end
 
