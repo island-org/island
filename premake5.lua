@@ -240,6 +240,7 @@ solution "island"
                 }
                 links {
                     "cuda.lib",
+                    "cudart.lib"
                     "nvrtc.lib"
                 }
                 configuration {"x32", "windows"}

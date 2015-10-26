@@ -25,7 +25,7 @@ void setupModuleResource(const char* kernelFileName)
     CUmodule newModule = createModuleFromFile(kernelFileName);
     if (newModule != NULL)
     {
-        cuModuleUnload(module);
+        if (module != NULL) cuModuleUnload(module);
         module = newModule;
     }
     checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, "mainImage"));
@@ -105,19 +105,19 @@ void setup()
     bind.EventRecord = &cuEventRecord;
     bind.EventQuery = &cuEventQuery;
     bind.EventElapsedTime = &cuEventElapsedTime;
-    rmt_BindCUDA(&bind);
+    //rmt_BindCUDA(&bind);
 
-    rmt_BindOpenGL();
+    //rmt_BindOpenGL();
 
 }
 
 void draw()
 {
-    rmt_LogText("start profiling");
+    //rmt_LogText("start profiling");
 
     uv_run(uv_default_loop(), UV_RUN_NOWAIT);
 
-    rmt_BeginCUDASample(main, 0);
+    //rmt_BeginCUDASample(main, 0);
     {
         if (isResized())
         {
@@ -147,30 +147,32 @@ void draw()
 
         checkCudaErrors(cuMemcpyDtoH(img_content, d_img_content, item_size));
     }
-    rmt_EndCUDASample(0);
+    //rmt_EndCUDASample(0);
 
-    rmt_BeginOpenGLSample(main);
+    //rmt_BeginOpenGLSample(main);
     {
         updateImage(img, img_content);
         image(img, 0, 0, width, height);
     }
-    rmt_EndOpenGLSample();
+    //rmt_EndOpenGLSample();
 
-    rmt_UpdateOpenGLFrame();
+    //rmt_UpdateOpenGLFrame();
 
-    rmt_LogText("end profiling");
+    //rmt_LogText("end profiling");
 }
 
 void teardown()
 {
     // Free device global memory
     checkCudaErrors(cuMemFree(d_img_content));
-    cuProfilerStop();
+    //cuProfilerStop();
 
     free(img_content);
 
-    rmt_UnbindOpenGL();
-    rmt_DestroyGlobalInstance(rmt);
+    //rmt_UnbindOpenGL();
+    //rmt_DestroyGlobalInstance(rmt);
 
     cuDevicePrimaryCtxRelease(cuDevice);
+
+    cudaDeviceReset();
 }
