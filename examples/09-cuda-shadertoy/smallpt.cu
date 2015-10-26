@@ -2,9 +2,7 @@
 #include "shadertoy.cuh"
 
 #define M_PI 3.14159265359f  // pi
-#define width (unsigned int)iResolution.x  // screenwidth
-#define height (unsigned int)iResolution.y // screenheight
-#define samps 1024 // samples 
+#define samps 100 // samples 
 
 // __device__ : executed on the device (GPU) and callable only from the device
 
@@ -158,15 +156,23 @@ extern "C" __global__ void mainImage()
     float2 fragCoord = calcFragCoord();
 
     unsigned int x = (unsigned int)fragCoord.x;
-    unsigned int y = (unsigned int)(height - 1 - fragCoord.y);
+    unsigned int y = (unsigned int)(iResolution.y - 1 - fragCoord.y);
 
     unsigned int s1 = x;  // seeds for random number generator
     unsigned int s2 = y;
 
     // generate ray directed at lower left corner of the screen
     // compute directions for all other rays by adding cx and cy increments in x and y direction
-    Ray cam(make_float3(50, 52, 295.6), normalize(make_float3(0, -0.042612, -1))); // first hardcoded camera ray(origin, direction) 
-    float3 cx = make_float3(width * .5135 / height, 0.0f, 0.0f); // ray direction offset in x direction
+#if 1
+    Ray cam(make_float3(50 + (iMouse.x - iResolution.x/2) * 0.1,
+        52 + (iResolution.y/2 - iMouse.y) * 0.1,
+        295.6),
+        normalize(make_float3(0,-0.042612,-1))
+    );
+#else
+    Ray cam(make_float3(50, 52, 295.6), normalize(make_float3(0, -0.042612, -1))); // first hardcoded camera ray(origin, direction)
+#endif
+    float3 cx = make_float3(iResolution.x * .5135 / iResolution.y, 0.0f, 0.0f); // ray direction offset in x direction
     float3 cy = normalize(cross(cx, cam.dir)) * .5135; // ray direction offset in y direction (.5135 is field of view angle)
     float3 r; // r is final pixel color       
 
@@ -177,7 +183,7 @@ extern "C" __global__ void mainImage()
     for (int s = 0; s < samps; s++){  // samples per pixel
 
         // compute primary ray direction
-        float3 d = cam.dir + cx*((.25 + x) / width - .5) + cy*((.25 + y) / height - .5);
+        float3 d = cam.dir + cx*((.25 + x) / iResolution.x - .5) + cy*((.25 + y) / iResolution.y - .5);
 
         // create primary ray, add incoming radiance to pixelcolor
         Ray ray(cam.orig + d * 40, normalize(d));
