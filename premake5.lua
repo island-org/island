@@ -7,7 +7,7 @@ local CUDA_PATH = os.getenv("CUDA_PATH");
 solution "island"
     location ("_project")
     configurations { "Debug", "Release" }
-    platforms {"native", "x64", "x32"}
+    platforms {"x64", "x32"}
     language "C"
     targetdir ("bin")
     kind "StaticLib"
