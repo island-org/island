@@ -78,7 +78,7 @@ void setup()
 
     if (sketchArgc != 2)
     {
-        printf("Usage: %s <cuda_toy.cu>", sketchArgv[0]);
+        printf("Usage: %s <cuda_toy.cu>\n", sketchArgv[0]);
         quit();
         return;
     }
