@@ -1,14 +1,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <nanovg.h>
-#include <nanovg_gl.h>
 
 #include <stdio.h>
 
 GLenum err; 
 GLFWwindow* window;
-struct NVGcontext* vg;
-int font;
 
 static void errorcb(int error, const char* desc)
 {
@@ -49,13 +45,6 @@ int main()
     // GLEW generates GL error because it calls glGetString(GL_EXTENSIONS), we'll consume it here.
     glGetError();
 
-    vg = nvgCreateGL3(NVG_STENCIL_STROKES);
-    if (vg == NULL)
-    {
-        printf("Could not init nanovg.\n");
-        return -1;
-    }
-
     while (!glfwWindowShouldClose(window))
     {
         double mx, my;
@@ -74,13 +63,9 @@ int main()
         glClearColor(0.3f, 0.3f, 0.32f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 
-        nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
-        nvgEndFrame(vg);
-
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    nvgDeleteGL3(vg);
     glfwTerminate();
 }
