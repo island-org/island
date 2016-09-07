@@ -54,6 +54,9 @@ solution "island"
         }
 
     project "glew"
+        includedirs {
+            "3rdparty/glew",
+        }
         files { 
             "3rdparty/glew/GL/*.h",
             "3rdparty/glew/*.c" 
