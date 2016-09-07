@@ -5,7 +5,6 @@
 
 typedef enum
 {
-    SOURCE_MOD_PLUG,
     SOURCE_WAV,
     SOURCE_WAV_STREAM,
     SOURCE_SPEECH,
@@ -58,6 +57,7 @@ void setupPAudio()
             SOLOUD_CLIP_ROUNDOFF | SOLOUD_ENABLE_VISUALIZATION, 
             SOLOUD_AUTO, 
             SOLOUD_AUTO, 
+            SOLOUD_AUTO,
             SOLOUD_AUTO);
     }
 }
@@ -102,16 +102,6 @@ PAudio loadAudio(const char* filename)
         }
         Wav_destroy(source);
     }
-    {
-        Modplug* source = Modplug_create();
-        if (Modplug_load(source, filename) == 0)
-        {
-            newAudio.type = SOURCE_MOD_PLUG;
-            newAudio.source = source;
-            return newAudio;
-        }
-        Modplug_destroy(source);
-    }
 
     return newAudio;
 }
@@ -129,7 +119,6 @@ void stopAudio(PAudio audio)
 
     switch (audio.type)
     {
-    case SOURCE_MOD_PLUG:       Modplug_stop(audio.source); break;
     case SOURCE_WAV:            Wav_stop(audio.source); break;
     case SOURCE_WAV_STREAM:     WavStream_stop(audio.source); break;
     default:                    break;
@@ -143,7 +132,6 @@ void destroyAudio(PAudio audio)
 
     switch (audio.type)
     {
-    case SOURCE_MOD_PLUG:       Modplug_destroy(audio.source); break;
     case SOURCE_WAV:            Wav_destroy(audio.source); break;
     case SOURCE_WAV_STREAM:     WavStream_destroy(audio.source); break;
     default:                    break;

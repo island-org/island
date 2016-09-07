@@ -5,7 +5,7 @@ local action = _ACTION or ""
 local CUDA_PATH = os.getenv("CUDA_PATH");
 
 solution "island"
-    location ("_project")
+    location (action)
     configurations { "Debug", "Release" }
     platforms {"x64", "x32"}
     language "C"
@@ -34,6 +34,7 @@ solution "island"
             "3rdparty/glfw/src/input.c",
             "3rdparty/glfw/src/monitor.c",
             "3rdparty/glfw/src/window.c",
+            "3rdparty/glfw/src/vulkan.c",
         }
 
         defines { "_GLFW_USE_OPENGL" }
@@ -42,8 +43,8 @@ solution "island"
             defines { "_GLFW_WIN32", "_GLFW_WGL" }
             files {
                 "3rdparty/glfw/src/win32*.c",
+                "3rdparty/glfw/src/egl_context.c",
                 "3rdparty/glfw/src/wgl_context.c",
-                "3rdparty/glfw/src/winmm_joystick.c",
             }
 
     project "glew"
@@ -57,7 +58,10 @@ solution "island"
         files { "3rdparty/nanovg/src/*" }
 
     project "libuv"
-        includedirs { "3rdparty/libuv/include" }
+        includedirs {
+            "3rdparty/libuv/include",
+            "3rdparty/libuv/src",
+        }
         files { 
             "3rdparty/libuv/include/*.h", 
             "3rdparty/libuv/src/*.c"
@@ -134,18 +138,13 @@ solution "island"
         language "C++"
         includedirs {
             "3rdparty/soloud/include",
-            "3rdparty/soloud/ext/libmodplug/src/libmodplug",
         }
         files { 
             "3rdparty/soloud/inlcude/*.h",
             "3rdparty/soloud/src/core/*.cpp",
-            "3rdparty/soloud/src/audiosource/modplug/*.*",
-            "3rdparty/soloud/src/audiosource/sfxr/*.*",
-            "3rdparty/soloud/src/audiosource/speech/*.*",
-            "3rdparty/soloud/src/audiosource/wav/*.*",
+            "3rdparty/soloud/src/audiosource/**",
             "3rdparty/soloud/src/filter/*.cpp",
             "3rdparty/soloud/src/c_api/*.cpp",
-            "3rdparty/soloud/ext/libmodplug/src/*.cpp",
         }
         defines {
             "WITH_MODPLUG",
@@ -239,16 +238,21 @@ solution "island"
                 includedirs { 
                     path.join("$(CUDA_PATH)", "include"),
                 }
-                links {
-                    "cuda.lib",
-                    "cudart.lib",
-                    "nvrtc.lib",
-                }
+
                 configuration {"x32", "windows"}
+                    links {
+                        "cuda.lib",
+                        "cudart.lib",
+                    }
                     libdirs {
                         path.join("$(CUDA_PATH)", "lib/win32"),
                     }
                 configuration {"x64", "windows"}
+                    links {
+                        "cuda.lib",
+                        "cudart.lib",
+                        "nvrtc.lib",
+                    }                
                     libdirs {
                         path.join("$(CUDA_PATH)", "lib/x64"),
                     }

@@ -43,7 +43,7 @@ void draw()
     text(sentence, 10, 100);
 }
 
-void shutdown()
+void teardown()
 {
     destroyAudio(speech);
     teardownPAudio();

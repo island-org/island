@@ -373,7 +373,7 @@ PImage loadImage(const char* filename)
     }
 
     nvgImageSize(vg, img.id, &img.width, &img.height);
-    img.tex = nvglImageHandle(vg, img.id);
+    img.tex = nvglImageHandleGL3(vg, img.id);
 
     return img;
 }
@@ -387,7 +387,7 @@ PImage createImage(int w, int h)
         w,
         h
     };
-    img.tex = nvglImageHandle(vg, img.id);
+    img.tex = nvglImageHandleGL3(vg, img.id);
 
     return img;
 }
@@ -681,7 +681,7 @@ int main(int argc, char *argv[])
             keyReleased = 0;
             keyPressed = 0;
             key = GLFW_KEY_UNKNOWN;
-            for (i = 0; i < GLFW_KEY_LAST; i++)
+            for (i = GLFW_KEY_SPACE; i < GLFW_KEY_LAST; i++)
             {
                 if (glfwGetKey(window, i) == GLFW_PRESS)
                 {

@@ -26,3 +26,6 @@
 /3rdparty/blendish/blender_icons.svg
 .hg_archival.txt
 *.hgignore
+
+/vs*
+/xcode*
