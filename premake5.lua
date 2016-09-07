@@ -47,6 +47,12 @@ solution "island"
                 "3rdparty/glfw/src/wgl_context.c",
             }
 
+    project "v7"
+        files { 
+            "3rdparty/v7/*.h",
+            "3rdparty/v7/*.c" 
+        }
+
     project "glew"
         files { 
             "3rdparty/glew/GL/*.h",
@@ -76,20 +82,6 @@ solution "island"
             files {
                 "3rdparty/libuv/src/win/*.c" 
             }
-
-    project "lua"
-        os.copyfile("3rdparty/lua/src/luaconf.h.orig", "3rdparty/lua/src/luaconf.h")
-        includedirs { "3rdparty/lua/src" }
-        files { 
-            "3rdparty/lua/src/*.h",
-            "3rdparty/lua/src/*.c"
-        }
-        excludes {
-            "3rdparty/lua/src/loadlib_rel.c",
-            "3rdparty/lua/src/lua.c",
-            "3rdparty/lua/src/luac.c",
-            "3rdparty/lua/src/print.c",
-        }
 
     project "stb"
         includedirs { "3rdparty/stb" }
@@ -169,7 +161,7 @@ solution "island"
             kind "ConsoleApp"
             files { 
                 "examples/" .. leaf_name .. "/*.h",
-                "examples/" .. leaf_name .. "/*.lua",
+                "examples/" .. leaf_name .. "/*.js",
                 "examples/" .. leaf_name .. "/*.c*",
             }
             defines { 
@@ -185,7 +177,7 @@ solution "island"
                 "3rdparty/glew",
                 "3rdparty/nanovg/src",
                 "3rdparty/libuv/include",
-                "3rdparty/lua/src",
+                "3rdparty/v7",
                 "3rdparty/stb",
                 "3rdparty/AntTweakBar/include",
                 "3rdparty/blendish",
@@ -204,12 +196,12 @@ solution "island"
                     "glew-d",
                     "nanovg-d",
                     "libuv-d",
-                    "lua-d",
                     "stb-d",
                     "AntTweakBar-d",
                     "blendish-d",
                     "soloud-d",
                     "Remotery-d",
+                    "v7-d",
                 }
 
             configuration "Release"
@@ -218,12 +210,12 @@ solution "island"
                     "glew",
                     "nanovg",
                     "libuv",
-                    "lua",
                     "stb",
                     "AntTweakBar",
                     "blendish",
                     "soloud",
                     "Remotery",
+                    "v7",
                 }
 
             configuration "windows"
@@ -241,17 +233,17 @@ solution "island"
 
                 configuration {"x32", "windows"}
                     links {
-                        "cuda.lib",
-                        "cudart.lib",
+                        "cuda",
+                        "cudart",
                     }
                     libdirs {
                         path.join("$(CUDA_PATH)", "lib/win32"),
                     }
                 configuration {"x64", "windows"}
                     links {
-                        "cuda.lib",
-                        "cudart.lib",
-                        "nvrtc.lib",
+                        "cuda",
+                        "cudart",
+                        "nvrtc",
                     }                
                     libdirs {
                         path.join("$(CUDA_PATH)", "lib/x64"),
