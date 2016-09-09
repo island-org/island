@@ -12,7 +12,7 @@ solution "island"
     targetdir ("bin")
     kind "StaticLib"
 
-    configuration "vs*"
+    filter "action:vs*"
         defines { "_CRT_SECURE_NO_WARNINGS" }
 
     configuration "Debug"
@@ -26,7 +26,9 @@ solution "island"
         flags { "Optimize"}
 
     project "glfw"
-        includedirs { "3rdparty/glfw/include" }
+        includedirs {
+            "3rdparty/glfw/include"
+        }
         files { 
             "3rdparty/glfw/include/GLFW/*.h",
             "3rdparty/glfw/src/context.c",
@@ -40,7 +42,7 @@ solution "island"
         defines { "_GLFW_USE_OPENGL" }
 
         configuration "windows"
-            defines { "_GLFW_WIN32", "_GLFW_WGL" }
+            defines { "_GLFW_WIN32", }
             files {
                 "3rdparty/glfw/src/win32*.c",
                 "3rdparty/glfw/src/egl_context.c",
@@ -87,7 +89,9 @@ solution "island"
             }
 
     project "stb"
-        includedirs { "3rdparty/stb" }
+        includedirs {
+            "3rdparty/stb"
+        }
         files { 
             "3rdparty/stb/stb/*.h",
             "3rdparty/stb/*.h",
@@ -155,6 +159,30 @@ solution "island"
             defines {"WITH_WINMM"}
             files {
                 "3rdparty/soloud/src/backend/winmm/*.cpp" 
+            }
+
+    project "nativefiledialog"
+        includedirs {
+            "3rdparty/nativefiledialog/src/include",
+        }
+        files { 
+            "3rdparty/nativefiledialog/src/include/**",
+            "3rdparty/nativefiledialog/src/*.h",
+            "3rdparty/nativefiledialog/src/nfd_common.c",
+        }
+        filter "system:windows"
+            language "C++"
+            files { 
+                "3rdparty/nativefiledialog/src/nfd_win.cpp",
+            }
+        filter "system:linux"
+            files { 
+                "3rdparty/nativefiledialog/src/nfd_gtk.c",
+            }
+            buildoptions {"`pkg-config --cflags gtk+-3.0`"}
+        filter "system:macosx"
+            files { 
+                "3rdparty/nativefiledialog/src/nfd_cocoa.m",
             }
 
     function create_example_project( example_path )

@@ -22,9 +22,6 @@
 [submodule "3rdparty/libuv"]
 	path = 3rdparty/libuv
 	url = https://github.com/libuv/libuv.git
-[submodule "3rdparty/tinydir"]
-	path = 3rdparty/tinydir
-	url = https://github.com/island-org/tinydir.git
 [submodule "3rdparty/Remotery"]
 	path = 3rdparty/Remotery
 	url = https://github.com/island-org/Remotery.git
@@ -37,3 +34,9 @@
 [submodule "3rdparty/v7"]
 	path = 3rdparty/v7
 	url = https://github.com/cesanta/v7.git
+[submodule "3rdparty/tinyobjloader-c"]
+	path = 3rdparty/tinyobjloader-c
+	url = https://github.com/island-org/tinyobjloader-c.git
+[submodule "3rdparty/nativefiledialog"]
+	path = 3rdparty/nativefiledialog
+	url = https://github.com/mlabbe/nativefiledialog.git
