@@ -7,16 +7,26 @@ local CUDA_PATH = os.getenv("CUDA_PATH");
 solution "island"
     location (action)
     configurations { "Debug", "Release" }
-    platforms {"x64", "x32"}
+    platforms {"x64", "x86"}
     language "C"
-    targetdir ("bin")
     kind "StaticLib"
 
     filter "action:vs*"
         defines { "_CRT_SECURE_NO_WARNINGS" }
 
+    configuration "x86"
+        libdirs {
+            "x86",
+        }
+        targetdir ("x86")
+
+    configuration "x64"
+        libdirs {
+            "x64",
+        }
+        targetdir ("x64")
+
     configuration "Debug"
-        targetdir ("bin")
         defines { "DEBUG" }
         flags { "Symbols"}
         targetsuffix "-d"
@@ -216,10 +226,6 @@ solution "island"
                 "3rdparty/Remotery/lib",
             }
 
-            libdirs {
-                "bin",
-            }
-
             -- TODO: automatically collect lib names
             configuration "Debug"
                 links {
@@ -274,7 +280,6 @@ solution "island"
                     links {
                         "cuda",
                         "cudart",
-                        "nvrtc",
                     }                
                     libdirs {
                         path.join("$(CUDA_PATH)", "lib/x64"),

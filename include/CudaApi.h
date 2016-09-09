@@ -23,6 +23,10 @@
 #include <cudaProfiler.h>
 #include <nvrtc.h>
 
+#ifdef _WIN32
+#pragma comment (lib, "nvrtc.lib")
+#endif
+
 const char *getCudaDrvErrorString(CUresult error_id);
 
 // TODO: improve error return
