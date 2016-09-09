@@ -204,6 +204,8 @@ void noStroke();
 
 #ifdef SKETCH_2D_IMPLEMENTATION
 
+_declspec(dllexport) uint32_t NvOptimusEnablement = 0x00000001;
+
 #include <nanovg_gl.h>
 #include <stb/stb_image_write.h>
 #include <stb/stb_perlin.h>
