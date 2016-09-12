@@ -112,14 +112,14 @@ solution "island"
                 "3rdparty/libuv/src/win/*.c" 
             }
 
-    project "stb"
+    project "island"
         includedirs {
             "3rdparty/stb"
         }
         files { 
-            "3rdparty/stb/stb/*.h",
-            "3rdparty/stb/*.h",
-            "3rdparty/stb/*.c" 
+            "3rdparty/stb/*",
+            "3rdparty/stb/stb/*",
+            "src/**",
         }
 
     project "Remotery"
@@ -228,7 +228,7 @@ solution "island"
                     "glew-d",
                     "nanovg-d",
                     "libuv-d",
-                    "stb-d",
+                    "island-d",
                     "soloud-d",
                     "Remotery-d",
                     "v7-d",
@@ -240,7 +240,7 @@ solution "island"
                     "glew",
                     "nanovg",
                     "libuv",
-                    "stb",
+                    "island",
                     "soloud",
                     "Remotery",
                     "v7",

@@ -281,6 +281,7 @@ void size(int winWidth, int winHeight)
     if (window)
     {
         // Resize existed window
+        glfwSetWindowPos(window, 0, 0);
         glfwSetWindowSize(window, winWidth, winHeight);
         return;
     }
@@ -292,6 +293,7 @@ void size(int winWidth, int winHeight)
         exit(1);
     }
 
+    glfwSetWindowPos(window, 0, 0);
     glfwGetWindowSize(window, &width, &height);
     glfwMakeContextCurrent(window);
 

@@ -29,3 +29,6 @@
 
 /vs*
 /xcode*
+/x86
+/x64
+.vscode
