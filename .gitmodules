@@ -4,18 +4,12 @@
 [submodule "3rdparty/nanovg"]
 	path = 3rdparty/nanovg
 	url = https://github.com/memononen/nanovg.git
-[submodule "3rdparty/libtess2"]
-	path = 3rdparty/libtess2
-	url = https://github.com/memononen/libtess2.git
 [submodule "3rdparty/jansson"]
 	path = 3rdparty/jansson
 	url = https://github.com/akheron/jansson.git
 [submodule "3rdparty/stb/stb"]
 	path = 3rdparty/stb/stb
 	url = https://github.com/island-org/stb.git
-[submodule "3rdparty/libhl"]
-	path = 3rdparty/libhl
-	url = https://github.com/xant/libhl.git
 [submodule "3rdparty/soloud"]
 	path = 3rdparty/soloud
 	url = https://github.com/jarikomppa/soloud.git
@@ -28,9 +22,6 @@
 [submodule "3rdparty/linmath"]
 	path = 3rdparty/linmath
 	url = https://github.com/datenwolf/linmath.h.git
-[submodule "3rdparty/klib"]
-	path = 3rdparty/klib
-	url = https://github.com/attractivechaos/klib.git
 [submodule "3rdparty/v7"]
 	path = 3rdparty/v7
 	url = https://github.com/cesanta/v7.git

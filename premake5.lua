@@ -26,6 +26,11 @@ solution "island"
         }
         targetdir ("x64")
 
+    filter "system:macosx"
+        defines {
+            "_MACOSX",
+        }
+
     configuration "Debug"
         defines { "DEBUG" }
         flags { "Symbols"}
@@ -33,7 +38,7 @@ solution "island"
 
     configuration "Release"
         defines { "NDEBUG" }
-        flags { "Optimize"}
+    	flags { "Optimize", "OptimizeSpeed", "NoEditAndContinue", "No64BitChecks" }   
 
     project "glfw"
         includedirs {
@@ -51,12 +56,21 @@ solution "island"
 
         defines { "_GLFW_USE_OPENGL" }
 
-        configuration "windows"
+        filter "system:windows"
             defines { "_GLFW_WIN32", }
             files {
-                "3rdparty/glfw/src/win32*.c",
+                "3rdparty/glfw/src/win32*",
                 "3rdparty/glfw/src/egl_context.c",
                 "3rdparty/glfw/src/wgl_context.c",
+            }
+        filter "system:macosx"
+            defines {
+                "_GLFW_COCOA",
+            }
+            files {
+                "3rdparty/glfw/src/cocoa*",
+                "3rdparty/glfw/src/nsgl*",
+                "3rdparty/glfw/src/posix_tls.c",
             }
 
     project "v7"
@@ -108,25 +122,6 @@ solution "island"
             "3rdparty/stb/*.c" 
         }
 
-    project "AntTweakBar"
-        language "C++"
-        includedirs { 
-            "3rdparty/AntTweakBar/include",
-            "3rdparty/glew",
-            "3rdparty/glfw/include",
-        } 
-        files {
-            "3rdparty/AntTweakBar/include/*.h",
-            "3rdparty/AntTweakBar/src/*",
-        }
-
-    project "blendish"
-        language "C++"
-        files { 
-            "3rdparty/blendish/*.h",
-            "3rdparty/blendish/blendish_lib.cpp" 
-        }
-
     project "Remotery"
         files { 
             "3rdparty/Remotery/lib/*",
@@ -155,20 +150,22 @@ solution "island"
             "3rdparty/soloud/src/filter/*.cpp",
             "3rdparty/soloud/src/c_api/*.cpp",
         }
-        defines {
-            "WITH_MODPLUG",
-            "MODPLUG_STATIC"
-        }
-        configuration "not windows"
-            defines {"WITH_OSS"}
-            files {
-                "3rdparty/soloud/src/backend/oss/*.cpp" 
-            }
-
-        configuration "windows"
+        filter "system:windows"
             defines {"WITH_WINMM"}
             files {
                 "3rdparty/soloud/src/backend/winmm/*.cpp" 
+            }
+        filter "system:linux"
+            defines {"WITH_OSS"}
+            files {
+                "3rdparty/soloud/src/backend/oss/*.cpp" 
+            }            
+        filter "system:macosx"
+            defines {
+                "WITH_COREAUDIO",
+            }
+            files {
+                "3rdparty/soloud/src/backend/coreaudio/*.cpp" 
             }
 
     project "nativefiledialog"
@@ -220,8 +217,6 @@ solution "island"
                 "3rdparty/libuv/include",
                 "3rdparty/v7",
                 "3rdparty/stb",
-                "3rdparty/AntTweakBar/include",
-                "3rdparty/blendish",
                 "3rdparty/soloud/include",
                 "3rdparty/Remotery/lib",
             }
@@ -234,8 +229,6 @@ solution "island"
                     "nanovg-d",
                     "libuv-d",
                     "stb-d",
-                    "AntTweakBar-d",
-                    "blendish-d",
                     "soloud-d",
                     "Remotery-d",
                     "v7-d",
@@ -248,8 +241,6 @@ solution "island"
                     "nanovg",
                     "libuv",
                     "stb",
-                    "AntTweakBar",
-                    "blendish",
                     "soloud",
                     "Remotery",
                     "v7",
@@ -261,6 +252,14 @@ solution "island"
                     "Psapi",
                     "Iphlpapi",
                     "Userenv",
+                }
+            configuration "macosx"
+                linkoptions {
+                    "-framework Cocoa",
+                    "-framework QuartzCore",
+                    "-framework IOKit",
+                    "-framework OpenGL",
+                    "-framework AudioToolbox",
                 }
 
             if CUDA_PATH ~= nil then

@@ -4,11 +4,11 @@
 #ifndef SKETCH_2D_H
 #define SKETCH_2D_H
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <nanovg.h>
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
+#include "nanovg.h"
 #include <stdio.h>
-#include <stb/stb_vec.h>
+#include "stb/stb_vec.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4244)  // conversion from 'float' to 'int', possible loss of data
@@ -204,11 +204,37 @@ void noStroke();
 
 #ifdef SKETCH_2D_IMPLEMENTATION
 
+#ifdef _WIN32
 _declspec(dllexport) uint32_t NvOptimusEnablement = 0x00000001;
+#endif
 
-#include <nanovg_gl.h>
-#include <stb/stb_image_write.h>
-#include <stb/stb_perlin.h>
+#include "nanovg_gl.h"
+#include "stb/stb_image_write.h"
+#include "stb/stb_perlin.h"
+
+#if defined NANOVG_GL2_IMPLEMENTATION
+    #define nvgCreateGL nvgCreateGL2
+    #define nvgDeleteGL nvgDeleteGL2
+    #define nvglCreateImageFromHandleGL nvglCreateImageFromHandleGL2
+    #define nvglImageHandleGL nvglImageFromHandleGL2
+#elif defined NANOVG_GL3_IMPLEMENTATION
+    #define nvgCreateGL nvgCreateGL3
+    #define nvgDeleteGL nvgDeleteGL3
+    #define nvglCreateImageFromHandleGL nvglCreateImageFromHandleGL3
+    #define nvglImageHandleGL nvglImageHandleGL3
+#elif defined NANOVG_GLES2_IMPLEMENTATION
+    #define nvgCreateGL nvgCreateGLES2
+    #define nvgDeleteGL nvgDeleteGLES2
+    #define nvglCreateImageFromHandleGL nvglCreateImageFromHandleGLES2
+    #define nvglImageHandleGL nvglImageHandleGLES2
+#elif defined NANOVG_GLES3_IMPLEMENTATION
+    #define nvgCreateGL nvgCreateGLES3
+    #define nvgDeleteGL nvgDeleteGLES3
+    #define nvglCreateImageFromHandleGL nvglCreateImageFromHandleGLES3
+    #define nvglImageHandleGL nvglImageHandleGLES3
+#else
+    #error "You must define NANOVG_GL*_IMPLEMENTATION or NANOVG_GLES*_IMPLEMENTATION"
+#endif
 
 float mouseX, mouseY;
 float pmouseX, pmouseY;
@@ -259,7 +285,6 @@ void size(int winWidth, int winHeight)
         return;
     }
 
-    //glfwWindowHint(GLFW_DECORATED, 0);
     window = glfwCreateWindow(winWidth, winHeight, "sketch", NULL, NULL);
     if (!window)
     {
@@ -270,8 +295,8 @@ void size(int winWidth, int winHeight)
     glfwGetWindowSize(window, &width, &height);
     glfwMakeContextCurrent(window);
 
-    puts(glGetString(GL_VERSION));
-    puts(glGetString(GL_VENDOR));
+    printf("GL version: %s\n", glGetString(GL_VERSION));
+    printf("GL Vendor: %s\n", glGetString(GL_VENDOR));
 
     if (!sGlewInitialzed)
     {
@@ -286,7 +311,7 @@ void size(int winWidth, int winHeight)
         glGetError();
     }
 
-    vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
+    vg = nvgCreateGL(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
     if (vg == NULL)
     {
         printf("Could not init nanovg.\n");
@@ -375,7 +400,7 @@ PImage loadImage(const char* filename)
     }
 
     nvgImageSize(vg, img.id, &img.width, &img.height);
-    img.tex = nvglImageHandleGL3(vg, img.id);
+    img.tex = nvglImageHandleGL(vg, img.id);
 
     return img;
 }
@@ -389,7 +414,7 @@ PImage createImage(int w, int h)
         w,
         h
     };
-    img.tex = nvglImageHandleGL3(vg, img.id);
+    img.tex = nvglImageHandleGL(vg, img.id);
 
     return img;
 }
@@ -604,34 +629,13 @@ int main(int argc, char *argv[])
 
     glfwSetErrorCallback(onGlfwError);
 
-#if 0
-#ifndef ISLAND_GL_VERSION_MAJOR
-#define ISLAND_GL_VERSION_MAJOR 4
-#endif
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ISLAND_GL_VERSION_MAJOR);
-
-#ifndef ISLAND_GL_VERSION_MINOR
-#define ISLAND_GL_VERSION_MINOR 5
-#endif
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ISLAND_GL_VERSION_MINOR);
-
-#ifndef ISLAND_GL_FORWARD_COMPAT
-#define ISLAND_GL_FORWARD_COMPAT GL_TRUE
-#endif
+#ifdef _MACOSX
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-#ifndef ISLAND_GL_PROFILE
-#define ISLAND_GL_PROFILE GLFW_OPENGL_CORE_PROFILE
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
-    glfwWindowHint(GLFW_OPENGL_PROFILE, ISLAND_GL_PROFILE);
-
-#ifndef ISLAND_GL_DEBUG_CONTEXT
-#define ISLAND_GL_DEBUG_CONTEXT GL_TRUE
-#endif
-    // TODO: add debug callback if possible
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, ISLAND_GL_DEBUG_CONTEXT);
-#endif
-
+    
     size(1024, 768);
 
     glfwSetTime(0);
@@ -732,7 +736,7 @@ int main(int argc, char *argv[])
 
     teardown();
 
-    nvgDeleteGL3(vg);
+    nvgDeleteGL(vg);
     glfwTerminate();
 }
 

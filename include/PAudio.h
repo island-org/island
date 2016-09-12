@@ -1,7 +1,7 @@
 #ifndef PAUDIO_H
 #define PAUDIO_H
 
-#include <soloud_c.h>
+#include "soloud_c.h"
 
 typedef enum
 {

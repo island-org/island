@@ -30,7 +30,7 @@
 ** THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <GL/glew.h>
+#include "GL/glew.h"
 
 #if defined(GLEW_OSMESA)
 #  define GLAPI extern
