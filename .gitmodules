@@ -31,3 +31,6 @@
 [submodule "3rdparty/nativefiledialog"]
 	path = 3rdparty/nativefiledialog
 	url = https://github.com/mlabbe/nativefiledialog.git
+[submodule "3rdparty/par"]
+	path = 3rdparty/par
+	url = https://github.com/prideout/par.git
