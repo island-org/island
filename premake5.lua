@@ -59,18 +59,18 @@ solution "island"
         filter "system:windows"
             defines { "_GLFW_WIN32", }
             files {
-                "3rdparty/glfw/src/win32*",
-                "3rdparty/glfw/src/egl_context.c",
-                "3rdparty/glfw/src/wgl_context.c",
+                "3rdparty/glfw/src/win32_*",
+                "3rdparty/glfw/src/egl_context.*",
+                "3rdparty/glfw/src/wgl_context.*",
             }
         filter "system:macosx"
             defines {
                 "_GLFW_COCOA",
             }
             files {
-                "3rdparty/glfw/src/cocoa*",
-                "3rdparty/glfw/src/nsgl*",
-                "3rdparty/glfw/src/posix_tls.c",
+                "3rdparty/glfw/src/cocoa_*",
+                "3rdparty/glfw/src/nsgl_*",
+                "3rdparty/glfw/src/posix_thread.*",
             }
 
     project "v7"
