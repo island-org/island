@@ -61,7 +61,7 @@ PShape loadShape(const char* filename)
     if (data == NULL) exit(-1);
     printf("filesize: %d\n", (int)data_len);
     
-    PShape shp = {};
+    PShape shp = {0};
     
     {
         unsigned int flags = TINYOBJ_FLAG_TRIANGULATE;
@@ -210,7 +210,7 @@ PShape loadShape(const char* filename)
 
 PShape createShape()
 {
-    PShape shp = {};
+    PShape shp = {0};
     tinyobj_attrib_init(&shp.attrib);
 
     return shp;

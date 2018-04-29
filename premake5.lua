@@ -38,7 +38,7 @@ solution "island"
 
     configuration "Release"
         defines { "NDEBUG" }
-    	flags { "Optimize", "OptimizeSpeed", "NoEditAndContinue", "No64BitChecks" }   
+    	flags { "Optimize", "OptimizeSpeed", "NoEditAndContinue", "No64BitChecks" }
 
     project "glfw"
         includedirs {
@@ -52,6 +52,7 @@ solution "island"
             "3rdparty/glfw/src/monitor.c",
             "3rdparty/glfw/src/window.c",
             "3rdparty/glfw/src/vulkan.c",
+            "3rdparty/glfw/src/osmesa_context.*",
         }
 
         defines { "_GLFW_USE_OPENGL" }
@@ -138,35 +139,35 @@ solution "island"
             }
         end
 
-    project "soloud"
-        language "C++"
-        includedirs {
-            "3rdparty/soloud/include",
-        }
-        files { 
-            "3rdparty/soloud/inlcude/*.h",
-            "3rdparty/soloud/src/core/*.cpp",
-            "3rdparty/soloud/src/audiosource/**",
-            "3rdparty/soloud/src/filter/*.cpp",
-            "3rdparty/soloud/src/c_api/*.cpp",
-        }
-        filter "system:windows"
-            defines {"WITH_WINMM"}
-            files {
-                "3rdparty/soloud/src/backend/winmm/*.cpp" 
-            }
-        filter "system:linux"
-            defines {"WITH_OSS"}
-            files {
-                "3rdparty/soloud/src/backend/oss/*.cpp" 
-            }            
-        filter "system:macosx"
-            defines {
-                "WITH_COREAUDIO",
-            }
-            files {
-                "3rdparty/soloud/src/backend/coreaudio/*.cpp" 
-            }
+    -- project "soloud"
+    --     language "C++"
+    --     includedirs {
+    --         "3rdparty/soloud/include",
+    --     }
+    --     files { 
+    --         "3rdparty/soloud/inlcude/*.h",
+    --         "3rdparty/soloud/src/core/*.cpp",
+    --         "3rdparty/soloud/src/audiosource/**",
+    --         "3rdparty/soloud/src/filter/*.cpp",
+    --         "3rdparty/soloud/src/c_api/*.cpp",
+    --     }
+    --     filter "system:windows"
+    --         defines {"WITH_WINMM"}
+    --         files {
+    --             "3rdparty/soloud/src/backend/winmm/*.cpp" 
+    --         }
+    --     filter "system:linux"
+    --         defines {"WITH_OSS"}
+    --         files {
+    --             "3rdparty/soloud/src/backend/oss/*.cpp" 
+    --         }            
+    --     filter "system:macosx"
+    --         defines {
+    --             "WITH_COREAUDIO",
+    --         }
+    --         files {
+    --             "3rdparty/soloud/src/backend/coreaudio/*.cpp" 
+    --         }
 
     project "nativefiledialog"
         includedirs {
@@ -229,7 +230,7 @@ solution "island"
                     "nanovg-d",
                     "libuv-d",
                     "island-d",
-                    "soloud-d",
+                    -- "soloud-d",
                     "Remotery-d",
                     "v7-d",
                 }
@@ -241,7 +242,7 @@ solution "island"
                     "nanovg",
                     "libuv",
                     "island",
-                    "soloud",
+                    -- "soloud",
                     "Remotery",
                     "v7",
                 }
@@ -279,7 +280,7 @@ solution "island"
                     links {
                         "cuda",
                         "cudart",
-                    }                
+                    }
                     libdirs {
                         path.join("$(CUDA_PATH)", "lib/x64"),
                     }
