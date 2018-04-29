@@ -11,7 +11,12 @@ You can also pull in the 3rdparty repos after cloning the repository with `git s
 
 To generate solutions, you would need [premake](http://premake.github.io/download.html).
 
-On Windows, you can use the included `premake5.exe` with `premake5 vs2013`.
+On Windows, you can use the included `tools\windows\premake5.exe` with `premake5 vs2013`.
+
+On Ubuntu, `tools/linux/premake gmake`
+> sudo apt-get install build-essential libxmu-dev libxi-dev libgl-dev libosmesa-dev libxcursor-dev libxrandr-dev libxinerama-dev
+
+On MacOS, `tools/macos/premake xcode4`
 
 Examples
 --------

@@ -16,15 +16,15 @@ solution "island"
 
     configuration "x86"
         libdirs {
-            "x86",
+            path.join(action, "x86")
         }
-        targetdir ("x86")
+        targetdir (path.join(action, "x86"))
 
     configuration "x64"
         libdirs {
-            "x64",
+            path.join(action, "x64"),
         }
-        targetdir ("x64")
+        targetdir (path.join(action, "x64"))
 
     filter "system:macosx"
         defines {
@@ -33,12 +33,16 @@ solution "island"
 
     configuration "Debug"
         defines { "DEBUG" }
-        flags { "Symbols"}
+        symbols "On"
         targetsuffix "-d"
 
     configuration "Release"
         defines { "NDEBUG" }
-    	flags { "Optimize", "OptimizeSpeed", "NoEditAndContinue", "No64BitChecks" }
+        flags { "No64BitChecks" }
+        editandcontinue "Off"
+        optimize "Speed"
+        optimize "On"
+        editandcontinue "Off"
 
     project "glfw"
         includedirs {
@@ -60,18 +64,30 @@ solution "island"
         filter "system:windows"
             defines { "_GLFW_WIN32", }
             files {
-                "3rdparty/glfw/src/win32_*",
-                "3rdparty/glfw/src/egl_context.*",
-                "3rdparty/glfw/src/wgl_context.*",
+                "3rdparty/glfw/src/win32*",
+                "3rdparty/glfw/src/egl_context*",
+                "3rdparty/glfw/src/wgl_context*",
             }
         filter "system:macosx"
             defines {
                 "_GLFW_COCOA",
             }
             files {
-                "3rdparty/glfw/src/cocoa_*",
-                "3rdparty/glfw/src/nsgl_*",
-                "3rdparty/glfw/src/posix_thread.*",
+                "3rdparty/glfw/src/cocoa*",
+                "3rdparty/glfw/src/nsgl*",
+                "3rdparty/glfw/src/posix*",
+            }
+        filter "system:linux"
+            defines {
+                "_GLFW_X11",
+            }
+            files {
+                "3rdparty/glfw/src/linux*",
+                "3rdparty/glfw/src/glx*",
+                "3rdparty/glfw/src/x11*",
+                "3rdparty/glfw/src/egl_context*",
+                "3rdparty/glfw/src/posix*",
+                "3rdparty/glfw/src/xkb*",
             }
 
     project "v7"
@@ -88,7 +104,10 @@ solution "island"
             "3rdparty/glew/GL/*.h",
             "3rdparty/glew/*.c" 
         }
-        defines "GLEW_STATIC"
+        defines {
+            "GLEW_STATIC",
+            "GLEW_NO_GLU",
+        }
 
     project "nanovg"
         files { "3rdparty/nanovg/src/*" }
@@ -103,16 +122,77 @@ solution "island"
             "3rdparty/libuv/src/*.c"
         }
 
-        configuration "linux"
+        filter "system:linux"
             files {
-                "3rdparty/libuv/src/unix/*.c" 
+                "3rdparty/libuv/src/unix/async.c",
+                "3rdparty/libuv/src/unix/atomic-ops.h",
+                "3rdparty/libuv/src/unix/core.c",
+                "3rdparty/libuv/src/unix/dl.c",
+                "3rdparty/libuv/src/unix/fs.c",
+                "3rdparty/libuv/src/unix/getaddrinfo.c",
+                "3rdparty/libuv/src/unix/getnameinfo.c",
+                "3rdparty/libuv/src/unix/internal.h",
+                "3rdparty/libuv/src/unix/loop-watcher.c",
+                "3rdparty/libuv/src/unix/loop.c",
+                "3rdparty/libuv/src/unix/pipe.c",
+                "3rdparty/libuv/src/unix/poll.c",
+                "3rdparty/libuv/src/unix/process.c",
+                "3rdparty/libuv/src/unix/signal.c",
+                "3rdparty/libuv/src/unix/spinlock.h",
+                "3rdparty/libuv/src/unix/stream.c",
+                "3rdparty/libuv/src/unix/tcp.c",
+                "3rdparty/libuv/src/unix/thread.c",
+                "3rdparty/libuv/src/unix/timer.c",
+                "3rdparty/libuv/src/unix/tty.c",
+                "3rdparty/libuv/src/unix/udp.c",
+
+                "3rdparty/libuv/src/unix/linux-core.c",
+                "3rdparty/libuv/src/unix/linux-inotify.c",
+                "3rdparty/libuv/src/unix/linux-syscalls.c",
+                "3rdparty/libuv/src/unix/linux-syscalls.h",
+                "3rdparty/libuv/src/unix/procfs-exepath.c",
+                "3rdparty/libuv/src/unix/proctitle.c",
+                "3rdparty/libuv/src/unix/sysinfo-loadavg.c",
+                "3rdparty/libuv/src/unix/sysinfo-memory.c",
             }
 
-        configuration "windows"
+        filter "system:windows"
             files {
                 "3rdparty/libuv/src/win/*.c" 
             }
 
+        filter "system:macosx"
+            files {
+                "3rdparty/libuv/src/unix/async.c",
+                "3rdparty/libuv/src/unix/atomic-ops.h",
+                "3rdparty/libuv/src/unix/core.c",
+                "3rdparty/libuv/src/unix/dl.c",
+                "3rdparty/libuv/src/unix/fs.c",
+                "3rdparty/libuv/src/unix/getaddrinfo.c",
+                "3rdparty/libuv/src/unix/getnameinfo.c",
+                "3rdparty/libuv/src/unix/internal.h",
+                "3rdparty/libuv/src/unix/loop-watcher.c",
+                "3rdparty/libuv/src/unix/loop.c",
+                "3rdparty/libuv/src/unix/pipe.c",
+                "3rdparty/libuv/src/unix/poll.c",
+                "3rdparty/libuv/src/unix/process.c",
+                "3rdparty/libuv/src/unix/signal.c",
+                "3rdparty/libuv/src/unix/spinlock.h",
+                "3rdparty/libuv/src/unix/stream.c",
+                "3rdparty/libuv/src/unix/tcp.c",
+                "3rdparty/libuv/src/unix/thread.c",
+                "3rdparty/libuv/src/unix/timer.c",
+                "3rdparty/libuv/src/unix/tty.c",
+                "3rdparty/libuv/src/unix/udp.c",
+
+                "3rdparty/libuv/src/unix/bsd-ifaddrs.c",
+                "3rdparty/libuv/src/unix/darwin.c",
+                "3rdparty/libuv/src/unix/darwin-proctitle.c",
+                "3rdparty/libuv/src/unix/fsevents.c",
+                "3rdparty/libuv/src/unix/kqueue.c",
+                "3rdparty/libuv/src/unix/proctitle",
+            }
+            
     project "island"
         includedirs {
             "3rdparty/stb"
@@ -139,58 +219,34 @@ solution "island"
             }
         end
 
-    -- project "soloud"
-    --     language "C++"
-    --     includedirs {
-    --         "3rdparty/soloud/include",
-    --     }
-    --     files { 
-    --         "3rdparty/soloud/inlcude/*.h",
-    --         "3rdparty/soloud/src/core/*.cpp",
-    --         "3rdparty/soloud/src/audiosource/**",
-    --         "3rdparty/soloud/src/filter/*.cpp",
-    --         "3rdparty/soloud/src/c_api/*.cpp",
-    --     }
-    --     filter "system:windows"
-    --         defines {"WITH_WINMM"}
-    --         files {
-    --             "3rdparty/soloud/src/backend/winmm/*.cpp" 
-    --         }
-    --     filter "system:linux"
-    --         defines {"WITH_OSS"}
-    --         files {
-    --             "3rdparty/soloud/src/backend/oss/*.cpp" 
-    --         }            
-    --     filter "system:macosx"
-    --         defines {
-    --             "WITH_COREAUDIO",
-    --         }
-    --         files {
-    --             "3rdparty/soloud/src/backend/coreaudio/*.cpp" 
-    --         }
-
-    project "nativefiledialog"
+    project "soloud"
+        language "C++"
         includedirs {
-            "3rdparty/nativefiledialog/src/include",
+            "3rdparty/soloud/include",
         }
         files { 
-            "3rdparty/nativefiledialog/src/include/**",
-            "3rdparty/nativefiledialog/src/*.h",
-            "3rdparty/nativefiledialog/src/nfd_common.c",
+            "3rdparty/soloud/inlcude/*.h",
+            "3rdparty/soloud/src/core/*.cpp",
+            "3rdparty/soloud/src/audiosource/**",
+            "3rdparty/soloud/src/filter/*.cpp",
+            "3rdparty/soloud/src/c_api/*.cpp",
         }
         filter "system:windows"
-            language "C++"
-            files { 
-                "3rdparty/nativefiledialog/src/nfd_win.cpp",
+            defines {"WITH_WINMM"}
+            files {
+                "3rdparty/soloud/src/backend/winmm/*.cpp" 
             }
         filter "system:linux"
-            files { 
-                "3rdparty/nativefiledialog/src/nfd_gtk.c",
+            defines {"WITH_OSS"}
+            files {
+                "3rdparty/soloud/src/backend/oss/*.cpp" 
             }
-            buildoptions {"`pkg-config --cflags gtk+-3.0`"}
         filter "system:macosx"
-            files { 
-                "3rdparty/nativefiledialog/src/nfd_cocoa.m",
+            defines {
+                "WITH_COREAUDIO",
+            }
+            files {
+                "3rdparty/soloud/src/backend/coreaudio/*.cpp" 
             }
 
     function create_example_project( example_path )
@@ -205,6 +261,7 @@ solution "island"
             }
             defines { 
                 "GLEW_STATIC",
+                "GLEW_NO_GLU",
                 "NANOVG_GL3_IMPLEMENTATION",
                 "RMT_USE_OPENGL",
             }
@@ -247,14 +304,14 @@ solution "island"
                     "v7",
                 }
 
-            configuration "windows"
+            filter "system:windows"
                 links {
                     "OpenGL32",
                     "Psapi",
                     "Iphlpapi",
                     "Userenv",
                 }
-            configuration "macosx"
+            filter "system:macosx"
                 linkoptions {
                     "-framework Cocoa",
                     "-framework QuartzCore",
@@ -263,12 +320,20 @@ solution "island"
                     "-framework AudioToolbox",
                 }
 
+            filter "system:linux"
+                links {
+                    "GL",
+                    "X11",
+                    "m",
+                    "pthread",
+                    "dl",
+                }
             if CUDA_PATH ~= nil then
                 includedirs { 
                     path.join("$(CUDA_PATH)", "include"),
                 }
 
-                configuration {"x32", "windows"}
+                configuration {"x86", "windows"}
                     links {
                         "cuda",
                         "cudart",

@@ -28,7 +28,6 @@
 *.hgignore
 
 /vs*
+/gmake
 /xcode*
-/x86
-/x64
 .vscode
