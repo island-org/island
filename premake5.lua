@@ -44,6 +44,17 @@ solution "island"
         optimize "On"
         editandcontinue "Off"
 
+    project "imgui"
+        includedirs {
+            "3rdparty/cimgui/cimgui",
+            "3rdparty/cimgui/imgui",
+        }
+        files { 
+            "3rdparty/cimgui/cimgui/*.h",
+            "3rdparty/cimgui/cimgui/*.cpp",
+            "3rdparty/cimgui/imgui/*",
+        }
+
     project "glfw"
         includedirs {
             "3rdparty/glfw/include"
@@ -195,11 +206,17 @@ solution "island"
             
     project "island"
         includedirs {
-            "3rdparty/stb"
+            "include",
+            "3rdparty/stb",
+            "3rdparty/glfw/include",
+            "3rdparty/glew",
+            "3rdparty/cimgui/cimgui",
+            "3rdparty/cimgui/imgui",
         }
         files { 
             "3rdparty/stb/*",
             "3rdparty/stb/stb/*",
+            "include/**",
             "src/**",
         }
 
@@ -219,35 +236,35 @@ solution "island"
             }
         end
 
-    project "soloud"
-        language "C++"
-        includedirs {
-            "3rdparty/soloud/include",
-        }
-        files { 
-            "3rdparty/soloud/inlcude/*.h",
-            "3rdparty/soloud/src/core/*.cpp",
-            "3rdparty/soloud/src/audiosource/**",
-            "3rdparty/soloud/src/filter/*.cpp",
-            "3rdparty/soloud/src/c_api/*.cpp",
-        }
-        filter "system:windows"
-            defines {"WITH_WINMM"}
-            files {
-                "3rdparty/soloud/src/backend/winmm/*.cpp" 
-            }
-        filter "system:linux"
-            defines {"WITH_OSS"}
-            files {
-                "3rdparty/soloud/src/backend/oss/*.cpp" 
-            }
-        filter "system:macosx"
-            defines {
-                "WITH_COREAUDIO",
-            }
-            files {
-                "3rdparty/soloud/src/backend/coreaudio/*.cpp" 
-            }
+    -- project "soloud"
+    --     language "C++"
+    --     includedirs {
+    --         "3rdparty/soloud/include",
+    --     }
+    --     files { 
+    --         "3rdparty/soloud/inlcude/*.h",
+    --         "3rdparty/soloud/src/core/*.cpp",
+    --         "3rdparty/soloud/src/audiosource/**",
+    --         "3rdparty/soloud/src/filter/*.cpp",
+    --         "3rdparty/soloud/src/c_api/*.cpp",
+    --     }
+    --     filter "system:windows"
+    --         defines {"WITH_WINMM"}
+    --         files {
+    --             "3rdparty/soloud/src/backend/winmm/*.cpp" 
+    --         }
+    --     filter "system:linux"
+    --         defines {"WITH_OSS"}
+    --         files {
+    --             "3rdparty/soloud/src/backend/oss/*.cpp" 
+    --         }
+    --     filter "system:macosx"
+    --         defines {
+    --             "WITH_COREAUDIO",
+    --         }
+    --         files {
+    --             "3rdparty/soloud/src/backend/coreaudio/*.cpp" 
+    --         }
 
     function create_example_project( example_path )
         leaf_name = string.sub(example_path, string.len("examples/") + 1);
@@ -264,6 +281,7 @@ solution "island"
                 "GLEW_NO_GLU",
                 "NANOVG_GL3_IMPLEMENTATION",
                 "RMT_USE_OPENGL",
+                "CIMGUI_DEFINE_ENUMS_AND_STRUCTS",
             }
 
             includedirs { 
@@ -277,6 +295,7 @@ solution "island"
                 "3rdparty/stb",
                 "3rdparty/soloud/include",
                 "3rdparty/Remotery/lib",
+                "3rdparty/cimgui/cimgui",
             }
 
             -- TODO: automatically collect lib names
@@ -290,6 +309,7 @@ solution "island"
                     -- "soloud-d",
                     "Remotery-d",
                     "v7-d",
+                    "imgui-d",
                 }
 
             configuration "Release"
@@ -302,6 +322,7 @@ solution "island"
                     -- "soloud",
                     "Remotery",
                     "v7",
+                    "imgui",
                 }
 
             filter "system:windows"
