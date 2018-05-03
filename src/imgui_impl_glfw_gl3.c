@@ -52,6 +52,7 @@
 #endif
 #include <float.h>
 #include <assert.h>
+#include <string.h>
 
 #define IM_ARRAYSIZE(_ARR)          ((int)(sizeof(_ARR)/sizeof(*_ARR)))         // Size of a static C-style array. Don't use on pointers!
 #define IM_OFFSETOF(_TYPE,_MEMBER)  ((size_t)&(((_TYPE*)0)->_MEMBER))           // Offset of _MEMBER within _TYPE. Standardized as offsetof() in modern C++.
@@ -67,7 +68,7 @@ struct ImVec2 makeImVec2(float x, float y)
 // GLFW data
 static GLFWwindow*  g_Window = NULL;
 static double       g_Time = 0.0f;
-static int         g_MouseJustPressed[3] = { FALSE, FALSE, FALSE };
+static int         g_MouseJustPressed[3] = { GL_FALSE, GL_FALSE, GL_FALSE };
 static GLFWcursor*  g_MouseCursors[ImGuiMouseCursor_Count_] = { 0 };
 
 // OpenGL3 data
@@ -213,7 +214,7 @@ static void ImGui_ImplGlfwGL3_SetClipboardText(void* user_data, const char* text
 void ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     if (action == GLFW_PRESS && button >= 0 && button < 3)
-        g_MouseJustPressed[button] = true;
+        g_MouseJustPressed[button] = GL_TRUE;
 }
 
 void ImGui_ImplGlfw_ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
@@ -227,9 +228,9 @@ void ImGui_ImplGlfw_KeyCallback(GLFWwindow* window, int key, int scancode, int a
 {
     struct ImGuiIO* io = igGetIO();
     if (action == GLFW_PRESS)
-        io->KeysDown[key] = true;
+        io->KeysDown[key] = GL_TRUE;
     if (action == GLFW_RELEASE)
-        io->KeysDown[key] = FALSE;
+        io->KeysDown[key] = GL_FALSE;
 
     (void)mods; // Modifiers are not reliable across systems
     io->KeyCtrl = io->KeysDown[GLFW_KEY_LEFT_CONTROL] || io->KeysDown[GLFW_KEY_RIGHT_CONTROL];
@@ -268,7 +269,7 @@ int ImGui_ImplGlfwGL3_CreateFontsTexture()
     // Restore state
     glBindTexture(GL_TEXTURE_2D, last_texture);
 
-    return true;
+    return GL_TRUE;
 }
 
 int ImGui_ImplGlfwGL3_CreateDeviceObjects()
@@ -333,7 +334,7 @@ int ImGui_ImplGlfwGL3_CreateDeviceObjects()
     glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
     glBindVertexArray(last_vertex_array);
 
-    return TRUE;
+    return GL_TRUE;
 }
 
 void    ImGui_ImplGlfwGL3_InvalidateDeviceObjects()
@@ -428,7 +429,7 @@ int    ImGui_ImplGlfwGL3_Init(GLFWwindow* window, int install_callbacks, const c
     if (install_callbacks)
         ImGui_ImplGlfw_InstallCallbacks(window);
 
-    return TRUE;
+    return GL_TRUE;
 }
 
 void ImGui_ImplGlfwGL3_Shutdown()
@@ -487,7 +488,7 @@ void ImGui_ImplGlfwGL3_NewFrame()
     {
         // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
         io->MouseDown[i] = g_MouseJustPressed[i] || glfwGetMouseButton(g_Window, i) != 0;
-        g_MouseJustPressed[i] = FALSE;
+        g_MouseJustPressed[i] = GL_FALSE;
     }
 
     // Update OS/hardware mouse cursor if imgui isn't drawing a software cursor

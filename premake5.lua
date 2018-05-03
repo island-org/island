@@ -219,6 +219,9 @@ solution "island"
             "include/**",
             "src/**",
         }
+        defines {
+            "GLEW_NO_GLU",
+        }
 
     project "Remotery"
         files { 
@@ -298,6 +301,10 @@ solution "island"
                 "3rdparty/cimgui/cimgui",
             }
 
+            libdirs {
+                "lib/vulkan"
+            }
+
             -- TODO: automatically collect lib names
             configuration "Debug"
                 links {
@@ -331,6 +338,7 @@ solution "island"
                     "Psapi",
                     "Iphlpapi",
                     "Userenv",
+                    "vulkan-1",
                 }
             filter "system:macosx"
                 linkoptions {
@@ -348,6 +356,8 @@ solution "island"
                     "m",
                     "pthread",
                     "dl",
+                    "vulkan",
+                    "stdc++",
                 }
             if CUDA_PATH ~= nil then
                 includedirs { 
