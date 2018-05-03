@@ -11,12 +11,12 @@ static void errorcb(int error, const char* desc)
     printf("GLFW error %d: %s\n", error, desc);
 }
 
-int main()
+void setup()
 {
     if (!glfwInit())
     {
         printf("Failed to init GLFW.");
-        return -1;
+        exit(1);
     }
 
     glfwSetErrorCallback(errorcb);
@@ -31,7 +31,7 @@ int main()
     if (!window)
     {
         glfwTerminate();
-        return NULL;
+        exit(1);
     }
     glfwMakeContextCurrent(window);
 
@@ -40,32 +40,48 @@ int main()
     if (glewInit() != GLEW_OK)
     {
         printf("Error: %s\n", glewGetErrorString(err));
-        return -1;
+        exit(1);
     }
     // GLEW generates GL error because it calls glGetString(GL_EXTENSIONS), we'll consume it here.
     glGetError();
+}
+
+void draw()
+{
+    double mx, my;
+    int winWidth, winHeight;
+    int fbWidth, fbHeight;
+    float pxRatio;
+
+    glfwGetCursorPos(window, &mx, &my);
+    glfwGetWindowSize(window, &winWidth, &winHeight);
+    glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+    // Calculate pixel ration for hi-dpi devices.
+    pxRatio = (float)fbWidth / (float)winWidth;
+
+    // Update and render
+    glViewport(0, 0, fbWidth, fbHeight);
+    glClearColor(0.3f, 0.3f, 0.32f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+
+void teardown()
+{
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+
+int main()
+{
+    setup();
 
     while (!glfwWindowShouldClose(window))
     {
-        double mx, my;
-        int winWidth, winHeight;
-        int fbWidth, fbHeight;
-        float pxRatio;
-
-        glfwGetCursorPos(window, &mx, &my);
-        glfwGetWindowSize(window, &winWidth, &winHeight);
-        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
-        // Calculate pixel ration for hi-dpi devices.
-        pxRatio = (float)fbWidth / (float)winWidth;
-
-        // Update and render
-        glViewport(0, 0, fbWidth, fbHeight);
-        glClearColor(0.3f, 0.3f, 0.32f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+        draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    glfwTerminate();
+    teardown();
 }
